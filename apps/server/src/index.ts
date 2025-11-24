@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
+import { swagger } from '@elysiajs/swagger'
 import { auth } from "@hackathon-trade/auth";
 
 const app = new Elysia()
@@ -23,3 +24,11 @@ const app = new Elysia()
 	.listen(3000, () => {
 		console.log("Server is running on http://localhost:3000");
 	});
+
+app.use(swagger({
+	autoDarkMode: true,
+	version: '1.0.0',
+	path: "/docs"
+}))
+
+export type App = typeof app 
