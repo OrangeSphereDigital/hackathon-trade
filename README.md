@@ -72,3 +72,4 @@ hackathon-trade/
 - `bun run check-types`: Check TypeScript types across all apps
 - `bun run db:push`: Push schema changes to database
 - `bun run db:studio`: Open database studio UI
+# hackathon-trade
