@@ -2,7 +2,14 @@ import "dotenv/config";
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { swagger } from '@elysiajs/swagger'
-import { auth } from "@hackathon-trade/auth";
+import { auth } from "@root/auth";
+import { tickerWsController } from "./modules/ticker/ticker.ws.controller";
+import { BinanceTickerCollector } from "./modules/binance/collector";
+
+// Start the Ticker Collector for supported pairs
+const SUPPORTED_PAIRS = ['SOLUSDT', 'ETHUSDT', 'BTCUSDT', 'BNBUSDT'];
+const binanceCollector = new BinanceTickerCollector(SUPPORTED_PAIRS);
+void binanceCollector.start();
 
 const app = new Elysia()
 	.use(
@@ -13,6 +20,7 @@ const app = new Elysia()
 			credentials: true,
 		}),
 	)
+    .use(tickerWsController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {

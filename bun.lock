@@ -19,10 +19,10 @@
         "@elysiajs/cors": "^1.4.0",
         "@elysiajs/cron": "^1.4.1",
         "@elysiajs/swagger": "^1.3.1",
-        "@hackathon-trade/auth": "workspace:*",
-        "@hackathon-trade/db": "workspace:*",
         "@prisma/adapter-pg": "^7.0.0",
         "@prisma/client": "^7.0.0",
+        "@root/auth": "workspace:*",
+        "@root/db": "workspace:*",
         "better-auth": "^1.4.1",
         "dotenv": "^17.2.3",
         "elysia": "^1.4.16",
@@ -31,7 +31,7 @@
         "zod": "^4.1.13",
       },
       "devDependencies": {
-        "@hackathon-trade/config": "workspace:*",
+        "@root/config": "workspace:*",
         "@types/bun": "^1.3.3",
         "prisma": "^7.0.0",
         "tsdown": "^0.16.6",
@@ -43,9 +43,9 @@
       "version": "0.0.0",
       "dependencies": {
         "@elysiajs/eden": "^1.4.5",
-        "@hackathon-trade/auth": "workspace:*",
         "@hookform/resolvers": "^5.1.1",
         "@prisma/client": "catalog:",
+        "@root/auth": "workspace:*",
         "@tailwindcss/vite": "^4.0.15",
         "@tanstack/react-form": "^1.12.3",
         "@tanstack/react-query": "^5.85.5",
@@ -64,7 +64,7 @@
         "zod": "^4.0.2",
       },
       "devDependencies": {
-        "@hackathon-trade/config": "workspace:*",
+        "@root/config": "workspace:*",
         "@tanstack/react-query-devtools": "^5.85.5",
         "@tanstack/react-router-devtools": "^1.114.27",
         "@tanstack/router-plugin": "^1.114.27",
@@ -80,26 +80,26 @@
       },
     },
     "packages/auth": {
-      "name": "@hackathon-trade/auth",
+      "name": "@root/auth",
       "dependencies": {
-        "@hackathon-trade/db": "workspace:*",
+        "@root/db": "workspace:*",
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "zod": "^4.1.11",
       },
       "devDependencies": {
-        "@hackathon-trade/config": "workspace:*",
+        "@root/config": "workspace:*",
       },
       "peerDependencies": {
         "typescript": "^5",
       },
     },
     "packages/config": {
-      "name": "@hackathon-trade/config",
+      "name": "@root/config",
       "version": "0.0.0",
     },
     "packages/db": {
-      "name": "@hackathon-trade/db",
+      "name": "@root/db",
       "dependencies": {
         "@prisma/adapter-pg": "^7.0.0",
         "@prisma/client": "catalog:",
@@ -108,7 +108,7 @@
         "zod": "^4.1.11",
       },
       "devDependencies": {
-        "@hackathon-trade/config": "workspace:*",
+        "@root/config": "workspace:*",
         "@types/pg": "^8.11.11",
         "prisma": "^7.0.0",
       },
@@ -116,6 +116,9 @@
         "typescript": "^5",
       },
     },
+  },
+  "overrides": {
+    "zeptomatch": "^1.0.0",
   },
   "catalog": {
     "@prisma/client": "^7.0.0",
@@ -280,12 +283,6 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.6", "", { "dependencies": { "@floating-ui/dom": "^1.7.4" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
-
-    "@hackathon-trade/auth": ["@hackathon-trade/auth@workspace:packages/auth"],
-
-    "@hackathon-trade/config": ["@hackathon-trade/config@workspace:packages/config"],
-
-    "@hackathon-trade/db": ["@hackathon-trade/db@workspace:packages/db"],
 
     "@hono/node-server": ["@hono/node-server@1.14.2", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GHjpOeHYbr9d1vkID2sNUYkl5IxumyhDrUJB7wBp7jvqYwPFt+oNKsAPBRcdSbV7kIrXhouLE199ks1QcK4r7A=="],
 
@@ -544,6 +541,12 @@
     "@rollup/rollup-win32-x64-gnu": ["@rollup/rollup-win32-x64-gnu@4.53.3", "", { "os": "win32", "cpu": "x64" }, "sha512-J9QDiOIZlZLdcot5NXEepDkstocktoVjkaKUtqzgzpt2yWjGlbYiKyp05rWwk4nypbYUNoFAztEgixoLaSETkg=="],
 
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.53.3", "", { "os": "win32", "cpu": "x64" }, "sha512-UhTd8u31dXadv0MopwGgNOBpUVROFKWVQgAg5N1ESyCz8AuBcMqm4AuTjrwgQKGDfoFuz02EuMRHQIw/frmYKQ=="],
+
+    "@root/auth": ["@root/auth@workspace:packages/auth"],
+
+    "@root/config": ["@root/config@workspace:packages/config"],
+
+    "@root/db": ["@root/db@workspace:packages/db"],
 
     "@scalar/openapi-types": ["@scalar/openapi-types@0.1.1", "", {}, "sha512-NMy3QNk6ytcCoPUGJH0t4NNr36OWXgZhA3ormr3TvhX1NDgoF95wFyodGVH8xiHeUyn2/FxtETm8UBLbB5xEmg=="],
 
@@ -1103,7 +1106,7 @@
 
     "yallist": ["yallist@3.1.1", "", {}, "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="],
 
-    "zeptomatch": ["zeptomatch@2.0.2", "", { "dependencies": { "grammex": "^3.1.10" } }, "sha512-H33jtSKf8Ijtb5BW6wua3G5DhnFjbFML36eFu+VdOoVY4HD9e7ggjqdM6639B+L87rjnR6Y+XeRzBXZdy52B/g=="],
+    "zeptomatch": ["zeptomatch@1.2.2", "", { "dependencies": { "grammex": "^3.1.1" } }, "sha512-0ETdzEO0hdYmT8aXHHf5aMjpX+FHFE61sG4qKFAoJD2Umt3TWdCmH7ADxn2oUiWTlqBGC+SGr8sYMfr+37J8pQ=="],
 
     "zhead": ["zhead@2.2.4", "", {}, "sha512-8F0OI5dpWIA5IGG5NHUg9staDwz/ZPxZtvGVf01j7vHqSyZ0raHY+78atOVxRqb73AotX22uV1pXt3gYSstGag=="],
 

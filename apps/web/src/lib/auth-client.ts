@@ -1,4 +1,4 @@
-import type { auth } from "@hackathon-trade/auth";
+import type { auth } from "@root/auth";
 import { createAuthClient } from "better-auth/react";
 import { inferAdditionalFields } from "better-auth/client/plugins";
 

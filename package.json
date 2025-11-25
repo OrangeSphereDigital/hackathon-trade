@@ -20,10 +20,10 @@
     "dev:native": "turbo -F native dev",
     "dev:web": "turbo -F web dev",
     "dev:server": "turbo -F server dev",
-    "db:push": "turbo -F @hackathon-trade/db db:push",
-    "db:studio": "turbo -F @hackathon-trade/db db:studio",
-    "db:generate": "turbo -F @hackathon-trade/db db:generate",
-    "db:migrate": "turbo -F @hackathon-trade/db db:migrate"
+    "db:push": "turbo -F @root/db db:push",
+    "db:studio": "turbo -F @root/db db:studio",
+    "db:generate": "turbo -F @root/db db:generate",
+    "db:migrate": "turbo -F @root/db db:migrate"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
@@ -32,6 +32,9 @@
   "devDependencies": {
     "turbo": "^2.5.4",
     "@types/bun": "^1.2.6"
+  },
+  "resolutions": {
+    "zeptomatch": "^1.0.0"
   },
   "packageManager": "bun@1.3.3"
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@hackathon-trade/auth",
+  "name": "@root/auth",
   "exports": {
     ".": {
       "default": "./src/index.ts"
@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {},
   "devDependencies": {
-    "@hackathon-trade/config": "workspace:*"
+    "@root/config": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -20,6 +20,6 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "^4.1.11",
-    "@hackathon-trade/db": "workspace:*"
+    "@root/db": "workspace:*"
   }
 }

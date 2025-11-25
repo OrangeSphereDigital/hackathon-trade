@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@elysiajs/eden": "^1.4.5",
-    "@hackathon-trade/auth": "workspace:*",
+    "@root/auth": "workspace:*",
     "@hookform/resolvers": "^5.1.1",
     "@prisma/client": "catalog:",
     "@tailwindcss/vite": "^4.0.15",
@@ -33,7 +33,7 @@
     "zod": "^4.0.2"
   },
   "devDependencies": {
-    "@hackathon-trade/config": "workspace:*",
+    "@root/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.85.5",
     "@tanstack/react-router-devtools": "^1.114.27",
     "@tanstack/router-plugin": "^1.114.27",

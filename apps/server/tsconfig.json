@@ -1,8 +1,8 @@
 {
-	"extends": "@hackathon-trade/config/tsconfig.base.json",
+	"extends": "../../packages/config/tsconfig.base.json",
 	"compilerOptions": {
 		"composite": true,
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"outDir": "dist",
 		"baseUrl": ".",
 		"paths": {

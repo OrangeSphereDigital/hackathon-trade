@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import prisma from "@hackathon-trade/db";
+import prisma from "@root/db";
 
 export const auth = betterAuth<BetterAuthOptions>({
 	database: prismaAdapter(prisma, {

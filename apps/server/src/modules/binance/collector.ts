@@ -11,10 +11,10 @@ export class BinanceTickerCollector {
   private pingInterval: number | null = null;
   private isRunning = false;
 
-  private symbol: string;
+  private symbols: string[];
 
-  constructor(symbol: string) {
-    this.symbol = symbol;
+  constructor(symbols: string[]) {
+    this.symbols = symbols;
   }
 
   async start() {
@@ -40,8 +40,9 @@ export class BinanceTickerCollector {
       this.ws = new WebSocket(WS_URL);
 
       this.ws.onopen = () => {
-        const stream = `${this.symbol.toLowerCase()}@bookTicker`;
-        const sub = { method: 'SUBSCRIBE', params: [stream], id: 1 };
+        // Subscribe to all symbols
+        const params = this.symbols.map(s => `${s.toLowerCase()}@bookTicker`);
+        const sub = { method: 'SUBSCRIBE', params, id: 1 };
         this.ws!.send(JSON.stringify(sub));
 
         // ping every 30s
@@ -57,9 +58,12 @@ export class BinanceTickerCollector {
           const msg = JSON.parse(String(evt.data));
           const tick = parseBinanceBookTicker(msg);
           if (!tick) return;
+          
           const price = (Number(tick.bidPrice) + Number(tick.askPrice)) / 2;
           const time = tick.eventTime ?? Date.now();
-          getAggregator('binance', 'SOLUSDT').tick(time, price);
+          
+          // Use the symbol from the tick data (normalized to uppercase)
+          getAggregator('binance', tick.symbol.toUpperCase()).tick(time, price);
         } catch {}
       };
 
