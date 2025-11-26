@@ -2,11 +2,11 @@ import { Elysia, t } from 'elysia';
 import { tickerRedis } from './ticker.redis.service';
 import type { Exchange, Candle1s } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
+import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
 
 // List of supported exchanges for validation
-const VALID_EXCHANGES = new Set<string>([
-    'binance', 'kucoin', 'dydx', 'coinbase', 'jupiter'
-]);
+const VALID_EXCHANGES = new Set<string>(Object.values(EXCHANGES));
+const VALID_SYMBOLS = new Set<string>(Object.values(SYMBOL_PAIRS));
 
 // Helper to track active subscriptions for cleanup
 const subscriptions = new WeakMap<any, { close: () => void }>();
@@ -34,10 +34,10 @@ export const tickerWsController = new Elysia()
     .ws('/ticker', {
         query: t.Object({
             exchanges: t.String({
-                description: 'Comma-separated list of exchanges (e.g., "binance,kucoin")' 
+                description: `Comma-separated list of exchanges. Supported: ${Object.values(EXCHANGES).join(', ')}` 
             }),
             symbols: t.String({
-                description: 'Comma-separated list of symbols (e.g., "SOL_USDT,ETH_USDT")'
+                description: `Comma-separated list of symbols. Supported: ${Object.values(SYMBOL_PAIRS).join(', ')}`
             })
         }),
 
@@ -51,7 +51,7 @@ export const tickerWsController = new Elysia()
 
             const requestedSymbols = symbolsStr.split(',')
                 .map(s => s.trim().toUpperCase())
-                .filter(Boolean);
+                .filter(s => VALID_SYMBOLS.has(s));
 
             if (requestedExchanges.length === 0 || requestedSymbols.length === 0) {
                 ws.send({ error: 'No valid exchanges or symbols provided' });
@@ -124,5 +124,5 @@ export const tickerWsController = new Elysia()
                 sub.close();
                 subscriptions.delete(ws);
             }
-        }
+        },
     });
