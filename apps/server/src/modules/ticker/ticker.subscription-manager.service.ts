@@ -1,6 +1,6 @@
 import { createClient, type RedisClientType } from 'redis';
 import { env } from '@/constants/env';
-import type { Exchange, Candle1s } from './type';
+import type { Exchange, TickerData } from './type';
 
 /**
  * Generates the Redis Pub/Sub channel name for live updates.
@@ -10,7 +10,7 @@ function getPubSubChannel(exchange: Exchange, symbol: string) {
     return `ticker:pub:${exchange}:${symbol}`;
 }
 
-export type CandleCallback = (exchange: Exchange, candle: Candle1s) => void;
+export type CandleCallback = (exchange: Exchange, candle: TickerData) => void;
 
 export class SubscriptionManager {
     private static instance: SubscriptionManager;
@@ -102,7 +102,7 @@ export class SubscriptionManager {
         if (!info || !callbacks || callbacks.size === 0) return;
 
         try {
-            const candle = JSON.parse(message) as Candle1s;
+            const candle = JSON.parse(message) as TickerData;
             // Fan-out to all listeners
             for (const cb of callbacks) {
                 cb(info.exchange, candle);

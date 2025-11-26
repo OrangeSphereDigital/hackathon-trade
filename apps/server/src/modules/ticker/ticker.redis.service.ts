@@ -1,4 +1,4 @@
-import type { Exchange, Candle1s } from './type';
+import type { Exchange, TickerData } from './type';
 import { redis } from '@/lib/redis';
 import { SubscriptionManager } from './ticker.subscription-manager.service';
 import { env } from '@/constants/env';
@@ -35,7 +35,7 @@ function isCandleFresh(candleTimeSec: number, maxAgeSec: number): boolean {
  * Stores the latest candle in Redis and publishes it to subscribers.
  * This handles both "real" ticks and "synthetic" (gap-filling) ticks.
  */
-async function setLatest(exchange: Exchange, symbol: string, candle: Candle1s, ttlSec: number = DEFAULT_TTL_SEC): Promise<void> {
+async function setLatest(exchange: Exchange, symbol: string, candle: TickerData, ttlSec: number = DEFAULT_TTL_SEC): Promise<void> {
   const client = await redis.getClient();
   const key = getRedisKey(exchange, symbol);
 
@@ -55,7 +55,7 @@ async function setLatest(exchange: Exchange, symbol: string, candle: Candle1s, t
 /**
  * Retrieves the single latest candle for a specific exchange/symbol from Redis.
  */
-async function getLatest(exchange: Exchange, symbol: string): Promise<Candle1s | null> {
+async function getLatest(exchange: Exchange, symbol: string): Promise<TickerData | null> {
   const client = await redis.getClient();
   const key = getRedisKey(exchange, symbol);
   
@@ -63,7 +63,7 @@ async function getLatest(exchange: Exchange, symbol: string): Promise<Candle1s |
   if (!rawData) return null;
 
   try {
-    const candle = JSON.parse(rawData) as Candle1s;
+    const candle = JSON.parse(rawData) as TickerData;
     // Basic validation to ensure we have a valid candle object
     if (typeof candle?.time !== 'number') return null;
     return candle;
@@ -80,12 +80,12 @@ async function getExchangesLatest(
   symbol: string, 
   exchanges: Exchange[], 
   maxAgeSec: number = 15
-): Promise<Partial<Record<Exchange, Candle1s | null>>> {
+): Promise<Partial<Record<Exchange, TickerData | null>>> {
   // Fetch all exchange data in parallel
   const candlePromises = exchanges.map((exchange) => getLatest(exchange, symbol));
   const results = await Promise.all(candlePromises);
   
-  const output: Partial<Record<Exchange, Candle1s | null>> = {};
+  const output: Partial<Record<Exchange, TickerData | null>> = {};
   
   exchanges.forEach((exchange, index) => {
     const candle = results[index];
@@ -105,7 +105,7 @@ const subManager = SubscriptionManager.getInstance();
 async function subscribeExchangesLatest(
   symbol: string, 
   exchanges: Exchange[], 
-  onCandle: (exchange: Exchange, candle: Candle1s) => void
+  onCandle: (exchange: Exchange, candle: TickerData) => void
 ) {
   // Create subscriptions for each exchange
   const unsubs = await Promise.all(

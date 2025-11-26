@@ -149,7 +149,7 @@ export class KucoinTickerCollector {
           const time = Number(data.time) || Date.now();
           
           // Feed the aggregator
-          getAggregator('kucoin', internalSymbol).tick(time, price);
+          getAggregator('kucoin', internalSymbol).tick(time, price, bid, ask);
         } catch (e) {
           console.warn('[KuCoin] Parse error:', e);
         }

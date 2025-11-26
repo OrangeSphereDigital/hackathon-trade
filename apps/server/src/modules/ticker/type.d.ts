@@ -1,16 +1,15 @@
 export type Exchange = 'binance' | 'kucoin' | 'dydx' | 'coinbase' | 'jupiter';
 
-export interface Candle1s {
+export interface TickerData {
   time: number; // epoch seconds UTC
-  open: number;
-  high: number;
-  low: number;
-  close: number;
+  bestBid: number; // Sell Price
+  bestAsk: number; // Buy Price
+  lastPrice: number; // Last Trade / Mid Price
   type: "real" | "synthetic";
 }
 
 export interface CandleEvent {
   exchange: Exchange;
   symbol: string; // normalized symbol key, e.g., 'SOLUSDT'
-  candle: Candle1s;
+  candle: TickerData;
 }

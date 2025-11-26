@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { tickerRedis } from './ticker.redis.service';
-import type { Exchange, Candle1s } from './type';
+import type { Exchange, TickerData } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
 import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
 
@@ -61,7 +61,7 @@ export const tickerWsController = new Elysia()
 
             // 2. Initialize State
             // Structure: { "SOL_USDT": { "binance": Candle, "kucoin": Candle } }
-            const connectionState: Record<string, Partial<Record<Exchange, Candle1s>>> = {};
+            const connectionState: Record<string, Partial<Record<Exchange, TickerData>>> = {};
             
             // Initialize empty objects for each symbol to ensure structure exists
             for (const sym of requestedSymbols) {
@@ -69,6 +69,24 @@ export const tickerWsController = new Elysia()
             }
 
             const allUnsubs: Array<() => void> = [];
+
+            // Buffering State
+            const pendingUpdates: Record<string, any> = {};
+            let flushTimer: number | null = null;
+
+            const flush = () => {
+                if (Object.keys(pendingUpdates).length === 0) {
+                    flushTimer = null;
+                    return;
+                }
+                // Send as Array of Objects: [{ "SOL_USDT": ... }, { "ETH_USDT": ... }]
+                const payload = Object.entries(pendingUpdates).map(([sym, data]) => ({ [sym]: data }));
+                ws.send(payload);
+                
+                // Clear buffer
+                for (const key in pendingUpdates) delete pendingUpdates[key];
+                flushTimer = null;
+            };
 
             // 3. Setup Subscriptions (Loop through Symbols x Exchanges)
             // We do this concurrently for speed
@@ -97,24 +115,30 @@ export const tickerWsController = new Elysia()
                         if (!connectionState[userSymbol]) connectionState[userSymbol] = {};
                         connectionState[userSymbol]![exchange] = candle;
 
-                        // Emit Update
-                        // We emit an object keyed by the User Symbol that changed
-                        // Format: { "SOL_USDT": { "binance": ..., "kucoin": ... } }
-                        ws.send({
-                            [userSymbol]: connectionState[userSymbol]
-                        });
+                        // Buffer the update
+                        pendingUpdates[userSymbol] = connectionState[userSymbol];
+
+                        // Schedule flush if not already scheduled
+                        if (!flushTimer) {
+                            flushTimer = setTimeout(flush, 100) as unknown as number;
+                        }
                     }
                 );
                 allUnsubs.push(sub.close);
             }));
 
             // 4. Send Initial Full Snapshot (All symbols)
-            // So the UI draws immediately
-            ws.send(connectionState);
+            // ws.send(connectionState); // Optional: Can rely on first flush, but good to send immediately
+            // Let's send initial state as an array to match new format
+            const initialArray = Object.entries(connectionState).map(([sym, data]) => ({ [sym]: data }));
+            if (initialArray.length > 0) ws.send(initialArray);
 
             // 5. Register Cleanup
             subscriptions.set(ws, {
-                close: () => allUnsubs.forEach(fn => fn())
+                close: () => {
+                    if (flushTimer) clearTimeout(flushTimer);
+                    allUnsubs.forEach(fn => fn());
+                }
             });
         },
 

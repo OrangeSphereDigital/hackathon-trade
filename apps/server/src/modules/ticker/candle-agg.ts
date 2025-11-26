@@ -1,16 +1,18 @@
 import { EventEmitter } from 'events';
-import type { Candle1s, CandleEvent, Exchange } from './type';
+import type { TickerData, CandleEvent, Exchange } from './type';
 import { tickerRedis } from './ticker.redis.service';
+
+const MAX_SYNTHETIC_FILLS = 3;
 
 class Aggregator extends EventEmitter {
     private currentSecond: number | null = null;
     private heartbeatInterval: any = null;
+    private syntheticFillCount = 0;
     
-    // OHLC state
-    private currentOpen = 0;
-    private currentHigh = 0;
-    private currentLow = 0;
-    private currentClose = 0;
+    // State
+    private lastPrice = 0;
+    private currentBid = 0;
+    private currentAsk = 0;
 
     constructor(private exchange: Exchange, private symbol: string) {
         super();
@@ -28,96 +30,103 @@ class Aggregator extends EventEmitter {
 
         // If we are entering a new second and haven't received a tick yet
         if (nowSec > this.currentSecond) {
-            // console.log(`[Aggregator:${this.exchange}:${this.symbol}] Heartbeat gap fill: ${this.currentSecond} -> ${nowSec}`);
-            // Feed a "tick" with the last known close price.
-            this.tick(nowMs, this.currentClose);
+            // Only fill if we haven't exceeded the max consecutive fills
+            if (this.syntheticFillCount < MAX_SYNTHETIC_FILLS) {
+                this.syntheticFillCount++;
+                // Feed a "tick" with the last known state (synthetic)
+                this.processTick(nowSec, this.lastPrice, this.currentBid, this.currentAsk, true);
+            }
         }
     }
 
     /**
      * Process a new trade tick.
-     * Handles aggregation into 1s candles, including gap filling for missing seconds.
      */
-    public tick(eventTimeMs: number, price: number) {
-        // console.log(`[Aggregator:${this.exchange}:${this.symbol}] Tick: $${price} @ ${eventTimeMs}`);
+    public tick(eventTimeMs: number, price: number, bid: number = 0, ask: number = 0) {
         const eventSecond = Math.floor(eventTimeMs / 1000);
+        // Real tick received, reset synthetic counter
+        this.syntheticFillCount = 0;
+        this.processTick(eventSecond, price, bid, ask, false);
+    }
 
-        // First tick ever: initialize state
+    private processTick(eventSecond: number, price: number, bid: number, ask: number, isSynthetic: boolean) {
+        // First tick ever
         if (this.currentSecond === null) {
-            this.startNewCandle(eventSecond, price);
+            this.currentSecond = eventSecond;
+            this.updateState(price, bid, ask);
             return;
         }
 
-        // Same second: update current candle
+        // Same second: just update latest state
         if (eventSecond === this.currentSecond) {
-            this.updateCurrentCandle(price);
+            this.updateState(price, bid, ask);
             return;
         }
 
-        // New second: finalize previous, fill gaps, start new
+        // New second: emit previous, maybe fill gaps, start new
         if (eventSecond > this.currentSecond) {
-            this.finalizeAndEmitCurrentCandle();
-            this.fillGaps(this.currentSecond + 1, eventSecond, this.currentClose);
-            this.startNewCandle(eventSecond, price);
-            return;
+            this.emitCurrent(isSynthetic ? "synthetic" : "real"); // The PREVIOUS second is what we are emitting
+            
+            // Fill gaps if we jumped more than 1 second (and aren't already synthetic filling from heartbeat)
+            // Note: Heartbeat handles 1s increments. If a REAL tick jumps 5 seconds, we might want to fill gaps or just jump.
+            // For simplicity/safety in arb, we just jump if it's a big gap from a real tick. 
+            // But let's respect the max fill rule even here.
+            this.fillGaps(this.currentSecond + 1, eventSecond);
+
+            this.currentSecond = eventSecond;
+            this.updateState(price, bid, ask);
         }
-
-        // Late tick (eventSecond < currentSecond): ignore out-of-order data
     }
 
-    private startNewCandle(second: number, price: number) {
-        this.currentSecond = second;
-        this.currentOpen = price;
-        this.currentHigh = price;
-        this.currentLow = price;
-        this.currentClose = price;
+    private updateState(price: number, bid: number, ask: number) {
+        this.lastPrice = price;
+        if (bid) this.currentBid = bid;
+        if (ask) this.currentAsk = ask;
     }
 
-    private updateCurrentCandle(price: number) {
-        this.currentHigh = Math.max(this.currentHigh, price);
-        this.currentLow = Math.min(this.currentLow, price);
-        this.currentClose = price;
-    }
-
-    private finalizeAndEmitCurrentCandle() {
+    private emitCurrent(type: "real" | "synthetic") {
         if (this.currentSecond === null) return;
 
-        const candle: Candle1s = {
+        const data: TickerData = {
             time: this.currentSecond,
-            open: this.currentOpen,
-            high: this.currentHigh,
-            low: this.currentLow,
-            close: this.currentClose,
-            type: "real"
+            bestBid: this.currentBid,
+            bestAsk: this.currentAsk,
+            lastPrice: this.lastPrice,
+            type: type === "real" && this.syntheticFillCount > 0 ? "synthetic" : type // If we filled this via heartbeat, it's synthetic
         };
 
-        this.publishCandle(candle);
+        // If we are emitting, reset synthetic count if it was a real close? 
+        // No, syntheticFillCount is managed by tick() vs checkHeartbeat().
+        
+        this.publish(data);
     }
 
-    private fillGaps(startSec: number, endSec: number, lastClose: number) {
+    private fillGaps(startSec: number, endSec: number) {
+        // Only fill up to MAX_SYNTHETIC_FILLS
+        let filled = 0;
         for (let s = startSec; s < endSec; s++) {
-            const syntheticCandle: Candle1s = {
+            if (this.syntheticFillCount >= MAX_SYNTHETIC_FILLS) break;
+            
+            const data: TickerData = {
                 time: s,
-                open: lastClose,
-                high: lastClose,
-                low: lastClose,
-                close: lastClose,
+                bestBid: this.currentBid,
+                bestAsk: this.currentAsk,
+                lastPrice: this.lastPrice,
                 type: "synthetic"
             };
-            this.publishCandle(syntheticCandle);
+            this.publish(data);
+            this.syntheticFillCount++;
         }
     }
 
-    private publishCandle(candle: Candle1s) {
-        // Emit event for local listeners (e.g. WebSocket broadcasting)
+    private publish(data: TickerData) {
         this.emit('candle', { 
             exchange: this.exchange, 
             symbol: this.symbol, 
-            candle 
+            candle: data 
         } as CandleEvent);
 
-        // Fire-and-forget write to Redis for persistence/distribution
-        void tickerRedis.setLatest(this.exchange, this.symbol, candle);
+        void tickerRedis.setLatest(this.exchange, this.symbol, data as any); // Type cast to avoid breaking if Candle1s mismatch temporarily
     }
 }
 
@@ -132,3 +141,4 @@ export function getAggregator(exchange: Exchange, symbol: string): Aggregator {
     }
     return agg;
 }
+

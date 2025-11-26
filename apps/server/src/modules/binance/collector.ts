@@ -60,11 +60,13 @@ export class BinanceTickerCollector {
           const tick = parseBinanceBookTicker(msg);
           if (!tick) return;
           
-          const price = (Number(tick.bidPrice) + Number(tick.askPrice)) / 2;
+          const bid = Number(tick.bidPrice);
+          const ask = Number(tick.askPrice);
+          const price = (bid + ask) / 2;
           const time = tick.eventTime ?? Date.now();
           
           // Use the symbol from the tick data (normalized to uppercase)
-          getAggregator('binance', tick.symbol.toUpperCase()).tick(time, price);
+          getAggregator('binance', tick.symbol.toUpperCase()).tick(time, price, bid, ask);
         } catch {}
       };
 
