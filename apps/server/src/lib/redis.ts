@@ -101,6 +101,19 @@ class RedisService {
     return await client.del(key);
   }
 
+  /**
+   * Deletes all keys matching the pattern.
+   * Use with caution!
+   */
+  public async flush(pattern: string): Promise<void> {
+    const client = await this.getClient();
+    const keys = await client.keys(pattern);
+    if (keys.length > 0) {
+      await client.del(keys);
+      console.log(`[Redis] Flushed ${keys.length} keys matching '${pattern}'`);
+    }
+  }
+
   public async cleanup(): Promise<void> {
     if (this.client && this.client.isOpen) {
       await this.client.disconnect();

@@ -40,6 +40,7 @@ export class BinanceTickerCollector {
       this.ws = new WebSocket(WS_URL);
 
       this.ws.onopen = () => {
+        console.log('[Binance] Connected');
         // Subscribe to all symbols
         const params = this.symbols.map(s => `${s.toLowerCase()}@bookTicker`);
         const sub = { method: 'SUBSCRIBE', params, id: 1 };

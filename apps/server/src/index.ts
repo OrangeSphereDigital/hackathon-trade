@@ -5,11 +5,40 @@ import { swagger } from '@elysiajs/swagger'
 import { auth } from "@root/auth";
 import { tickerWsController } from "./modules/ticker/ticker.ws.controller";
 import { BinanceTickerCollector } from "./modules/binance/collector";
+import { KucoinTickerCollector } from "./modules/kucoin/collector";
+import { redis } from "@/lib/redis";
+
+// --- INIT & CLEANUP ---
+// Clean old ticker data from Redis on startup
+// We do this inside an async IIFE or just promise chain since top-level await is supported in Bun
+await redis.flush('ticker:*');
+
+// --- COLLECTOR MANAGEMENT (HOT RELOAD SAFE) ---
+// Use globalThis to track collectors so they survive hot reloads and can be stopped
+const GLOBAL_KEY = Symbol.for('app.collectors');
+const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null };
+(globalThis as any)[GLOBAL_KEY] = globalCollectors;
+
+// Stop existing collectors if they exist (Hot Reload Cleanup)
+if (globalCollectors.binance) {
+    // console.log('[System] Stopping previous Binance collector...');
+    await globalCollectors.binance.stop();
+}
+if (globalCollectors.kucoin) {
+    // console.log('[System] Stopping previous KuCoin collector...');
+    await globalCollectors.kucoin.stop();
+}
 
 // Start the Ticker Collector for supported pairs
 const SUPPORTED_PAIRS = ['SOLUSDT', 'ETHUSDT', 'BTCUSDT', 'BNBUSDT'];
+
 const binanceCollector = new BinanceTickerCollector(SUPPORTED_PAIRS);
 void binanceCollector.start();
+globalCollectors.binance = binanceCollector;
+
+const kucoinCollector = new KucoinTickerCollector(SUPPORTED_PAIRS);
+void kucoinCollector.start();
+globalCollectors.kucoin = kucoinCollector;
 
 const app = new Elysia()
 	.use(

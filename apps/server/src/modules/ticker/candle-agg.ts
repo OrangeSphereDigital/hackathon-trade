@@ -4,6 +4,7 @@ import { tickerRedis } from './ticker.redis.service';
 
 class Aggregator extends EventEmitter {
     private currentSecond: number | null = null;
+    private heartbeatInterval: any = null;
     
     // OHLC state
     private currentOpen = 0;
@@ -14,6 +15,23 @@ class Aggregator extends EventEmitter {
     constructor(private exchange: Exchange, private symbol: string) {
         super();
         this.setMaxListeners(100);
+        
+        // Start heartbeat to fill gaps if no trades occur
+        this.heartbeatInterval = setInterval(() => this.checkHeartbeat(), 1000);
+    }
+
+    private checkHeartbeat() {
+        if (this.currentSecond === null) return;
+
+        const nowMs = Date.now();
+        const nowSec = Math.floor(nowMs / 1000);
+
+        // If we are entering a new second and haven't received a tick yet
+        if (nowSec > this.currentSecond) {
+            // console.log(`[Aggregator:${this.exchange}:${this.symbol}] Heartbeat gap fill: ${this.currentSecond} -> ${nowSec}`);
+            // Feed a "tick" with the last known close price.
+            this.tick(nowMs, this.currentClose);
+        }
     }
 
     /**
@@ -21,6 +39,7 @@ class Aggregator extends EventEmitter {
      * Handles aggregation into 1s candles, including gap filling for missing seconds.
      */
     public tick(eventTimeMs: number, price: number) {
+        // console.log(`[Aggregator:${this.exchange}:${this.symbol}] Tick: $${price} @ ${eventTimeMs}`);
         const eventSecond = Math.floor(eventTimeMs / 1000);
 
         // First tick ever: initialize state

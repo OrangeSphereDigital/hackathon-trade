@@ -1,10 +1,11 @@
 import type { Exchange, Candle1s } from './type';
 import { redis } from '@/lib/redis';
-import { env } from '@/constants/env';
 import { SubscriptionManager } from './ticker.subscription-manager.service';
+import { env } from '@/constants/env';
 
 // Default Time-To-Live for ticker data in Redis (seconds)
-const DEFAULT_TTL_SEC = Number(env.TICKER_REDIS_TTL_SEC ?? 90);
+// Reduced to 30s to prevent stale data accumulation
+const DEFAULT_TTL_SEC = Number(env.TICKER_REDIS_TTL_SEC ?? 30);
 
 /**
  * Generates the Redis key for the latest candle of a specific exchange/symbol pair.
