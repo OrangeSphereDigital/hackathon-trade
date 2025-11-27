@@ -3,6 +3,7 @@ import { tickerRedis } from './ticker.redis.service';
 import type { Exchange, TickerData } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
 import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
+import { calculateArbitrageOpportunity } from './arbitrage.utils';
 
 // List of supported exchanges for validation
 const VALID_EXCHANGES = new Set<string>(Object.values(EXCHANGES));
@@ -79,8 +80,19 @@ export const tickerWsController = new Elysia()
                     flushTimer = null;
                     return;
                 }
-                // Send as Array of Objects: [{ "SOL_USDT": ... }, { "ETH_USDT": ... }]
-                const payload = Object.entries(pendingUpdates).map(([sym, data]) => ({ [sym]: data }));
+                
+                // Send as Array of Objects with new structure:
+                // [ { "SOL_USDT": { prices: {...}, arbitrage: {...} } } ]
+                const payload = Object.entries(pendingUpdates).map(([sym, prices]) => {
+                    const arb = calculateArbitrageOpportunity(prices);
+                    return {
+                        [sym]: {
+                            prices: prices,
+                            arbitrage: arb
+                        }
+                    };
+                });
+                
                 ws.send(payload);
                 
                 // Clear buffer
@@ -128,9 +140,15 @@ export const tickerWsController = new Elysia()
             }));
 
             // 4. Send Initial Full Snapshot (All symbols)
-            // ws.send(connectionState); // Optional: Can rely on first flush, but good to send immediately
-            // Let's send initial state as an array to match new format
-            const initialArray = Object.entries(connectionState).map(([sym, data]) => ({ [sym]: data }));
+            const initialArray = Object.entries(connectionState).map(([sym, prices]) => {
+                const arb = calculateArbitrageOpportunity(prices);
+                return {
+                    [sym]: {
+                        prices: prices,
+                        arbitrage: arb
+                    }
+                };
+            });
             if (initialArray.length > 0) ws.send(initialArray);
 
             // 5. Register Cleanup
