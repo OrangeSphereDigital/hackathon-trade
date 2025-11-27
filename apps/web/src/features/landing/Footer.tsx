@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 export const Footer = () => {
   return (
@@ -11,10 +11,10 @@ export const Footer = () => {
           </div>
           
           <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
-            <Link href="#what-we-do" className="hover:text-foreground transition-colors">What we do</Link>
-            <Link href="#features" className="hover:text-foreground transition-colors">Features</Link>
-            <Link href="#early-access" className="hover:text-foreground transition-colors">Early access</Link>
-            <Link href="#team" className="hover:text-foreground transition-colors">Team</Link>
+            <Link to="/" hash="what-we-do" className="hover:text-foreground transition-colors">What we do</Link>
+            <Link to="/" hash="features" className="hover:text-foreground transition-colors">Features</Link>
+            <Link to="/" hash="early-access" className="hover:text-foreground transition-colors">Early access</Link>
+            <Link to="/" hash="team" className="hover:text-foreground transition-colors">Team</Link>
           </div>
         </div>
       </div>

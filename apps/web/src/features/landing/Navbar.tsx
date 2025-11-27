@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,17 +13,13 @@ export const Navbar = () => {
     { label: "Hackathon build", id: "hackathon" },
   ];
 
-  const getHref = (id: string) => {
-    return `/#${id}`;
-  };
-
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Left: Logo + Tagline */}
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 font-bold text-black shadow-lg shadow-orange-500/50">
                 21
               </div>
@@ -47,7 +43,8 @@ export const Navbar = () => {
               {navItems.map((item) => (
                 <Link
                   key={item.id}
-                  href={getHref(item.id)}
+                  to="/"
+                  hash={item.id}
                   className="transition-colors hover:text-primary"
                 >
                   {item.label}
@@ -81,7 +78,8 @@ export const Navbar = () => {
           {navItems.map((item) => (
             <Link
               key={item.id}
-              href={getHref(item.id)}
+              to="/"
+              hash={item.id}
               className="block w-full py-2 text-left text-sm font-medium hover:text-primary"
               onClick={() => setIsMenuOpen(false)}
             >

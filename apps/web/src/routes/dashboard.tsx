@@ -1,5 +1,6 @@
 import { authClient } from "@/lib/auth-client";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { LiveTicker } from "@/features/live-tick-and-arbitrage";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -17,11 +18,18 @@ export const Route = createFileRoute("/dashboard")({
 
 function RouteComponent() {
 	const { session } = Route.useRouteContext();
-
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.data?.user.name}</p>
+		<div className="container mx-auto py-8 space-y-8">
+			<div className="flex items-center justify-between">
+				<div>
+					<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+					<p className="text-muted-foreground">
+						Welcome back, {session.data?.user.name}
+					</p>
+				</div>
+			</div>
+
+			<LiveTicker />
 		</div>
 	);
 }
