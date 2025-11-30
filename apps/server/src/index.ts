@@ -21,16 +21,18 @@ const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kuc
 
 // Stop existing collectors if they exist (Hot Reload Cleanup)
 if (globalCollectors.binance) {
-    // console.log('[System] Stopping previous Binance collector...');
+    console.log('[System] Stopping previous Binance collector...');
     await globalCollectors.binance.stop();
 }
 if (globalCollectors.kucoin) {
-    // console.log('[System] Stopping previous KuCoin collector...');
+    console.log('[System] Stopping previous KuCoin collector...');
     await globalCollectors.kucoin.stop();
 }
 
+import { SYMBOL_PAIRS } from './constants/constant';
+
 // Start the Ticker Collector for supported pairs
-const SUPPORTED_PAIRS = ['SOLUSDT', 'ETHUSDT', 'BTCUSDT', 'BNBUSDT'];
+const SUPPORTED_PAIRS = Object.values(SYMBOL_PAIRS);
 
 const binanceCollector = new BinanceTickerCollector(SUPPORTED_PAIRS);
 void binanceCollector.start();

@@ -93,7 +93,7 @@ export class KucoinTickerCollector {
         
         // Convert internal symbols (SOLUSDT) to KuCoin symbols (SOL-USDT)
         const topicSymbols = this.symbols
-          .map(s => s.replace('USDT', '-USDT'))
+          .map(s => s.replace(/_/g, '').replace('USDT', '-USDT'))
           .filter(Boolean)
           .join(',');
 

@@ -55,10 +55,10 @@ export function ArbitrageCard({ symbol, data }: ArbitrageCardProps) {
                 
                 <div className="text-right">
                     <div className={cn("text-sm font-medium", spreadPct >= 0 ? "text-green-500" : "text-red-500")}>
-                        Difference : {spreadPct > 0 ? '+' : ''}{spreadPct.toFixed(2)}%
+                        Difference : {spreadPct > 0 ? '+' : ''}{Math.abs(spreadPct).toFixed(2)}%
                     </div>
                     <div className="text-xs text-muted-foreground">
-                        {spreadValue > 0 ? '+' : ''}${spreadValue.toFixed(6)}
+                        {spreadValue > 0 ? '+' : ''}${Math.abs(spreadValue).toFixed(6)}
                     </div>
                 </div>
             </div>

@@ -41,10 +41,30 @@ export class BinanceTickerCollector {
 
       this.ws.onopen = () => {
         console.log('[Binance] Connected');
+        
         // Subscribe to all symbols
-        const params = this.symbols.map(s => `${s.toLowerCase()}@bookTicker`);
-        const sub = { method: 'SUBSCRIBE', params, id: 1 };
-        this.ws!.send(JSON.stringify(sub));
+        // Normalize: SOL_USDT -> solusdt
+        const params = this.symbols
+            .filter(Boolean)
+            .map(s => `${s.replace(/_/g, '').toLowerCase()}@bookTicker`);
+
+        if (params.length === 0) {
+            console.warn('[Binance] No symbols to subscribe to');
+            return;
+        }
+
+        const sub = { 
+            method: 'SUBSCRIBE', 
+            params, 
+            id: 1 
+        };
+
+        console.log(`[Binance] Subscribing to ${params.length} pairs:`, params);
+        try {
+            this?.ws?.send(JSON.stringify(sub));
+        } catch (e) {
+            console.error('[Binance] Failed to send subscription:', e);
+        }
 
         // ping every 30s
         this.pingInterval = setInterval(() => {
@@ -71,12 +91,14 @@ export class BinanceTickerCollector {
       };
 
       this.ws.onerror = (err) => {
+        console.error('[Binance] WS Error:', err);
         if (!this.isRunning) return;
-        reject(err);
+        // reject(err); // Don't reject, just log. Reconnect is handled by onclose
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (evt) => {
         if (!this.isRunning) return;
+        console.warn(`[Binance] Closed (Code: ${evt.code}, Reason: ${evt.reason}). Reconnecting...`);
         // simple reconnect
         setTimeout(() => this.connect().catch(() => {}), 1000);
       };

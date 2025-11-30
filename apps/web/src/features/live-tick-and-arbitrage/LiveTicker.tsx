@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTickerWebSocket } from './useTickerWebSocket';
 import { ArbitrageCard } from './ArbitrageCard';
 import { Button } from '@/components/ui/button';
@@ -12,11 +12,11 @@ interface LiveTickerProps {
 }
 
 const DEFAULT_SYMBOLS = ['SOL_USDT', 'ETH_USDT', 'BTC_USDT', 'BNB_USDT'];
-const DEFAULT_EXCHANGES = ['binance', 'kucoin', 'coinbase'];
+const DEFAULT_EXCHANGES = ['binance', 'kucoin'];
 
-export function LiveTicker({ 
-    initialSymbols = DEFAULT_SYMBOLS, 
-    initialExchanges = DEFAULT_EXCHANGES 
+export function LiveTicker({
+    initialSymbols = DEFAULT_SYMBOLS,
+    initialExchanges = DEFAULT_EXCHANGES
 }: LiveTickerProps) {
     // State for the inputs (now arrays)
     const [selectedSymbols, setSelectedSymbols] = useState<string[]>(initialSymbols);
@@ -41,8 +41,10 @@ export function LiveTicker({
     });
 
     const sortedSymbols = useMemo(() => {
-        return Object.keys(data).sort();
-    }, [data]);
+        return Object.keys(data)
+            .filter(symbol => activeConfig.symbols.includes(symbol))
+            .sort();
+    }, [data, activeConfig.symbols]);
 
     return (
         <div className="space-y-6">
@@ -83,7 +85,7 @@ export function LiveTicker({
 
             {/* Content */}
             {status === 'connecting' && Object.keys(data).length === 0 ? (
-                 <div className="p-12 text-center text-muted-foreground animate-pulse">
+                <div className="p-12 text-center text-muted-foreground animate-pulse">
                     Connecting to feed...
                 </div>
             ) : status === 'error' ? (
@@ -93,17 +95,17 @@ export function LiveTicker({
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {sortedSymbols.map(symbol => (
-                        <ArbitrageCard 
-                            key={symbol} 
-                            symbol={symbol} 
-                            data={data[symbol]} 
+                        <ArbitrageCard
+                            key={symbol}
+                            symbol={symbol}
+                            data={data[symbol]}
                         />
                     ))}
-                    
+
                     {sortedSymbols.length === 0 && status === 'connected' && (
-                    <div className="col-span-full text-center text-muted-foreground py-12">
-                        Waiting for updates for: {activeConfig.symbols.join(', ')}
-                    </div>
+                        <div className="col-span-full text-center text-muted-foreground py-12">
+                            Waiting for updates for: {activeConfig.symbols.join(', ')}
+                        </div>
                     )}
                 </div>
             )}

@@ -18,6 +18,8 @@ export function useTickerWebSocket({ symbols, exchanges, enabled = true }: UseTi
             return;
         }
 
+        // Clear old data when config changes to remove stale symbols
+        setData({});
         setStatus('connecting');
 
         const sub = client.ticker.subscribe({

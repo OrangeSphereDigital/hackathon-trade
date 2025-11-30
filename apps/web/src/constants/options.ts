@@ -1,7 +1,6 @@
 export const AVAILABLE_EXCHANGES = [
     { value: 'binance', label: 'Binance' },
     { value: 'kucoin', label: 'KuCoin' },
-    { value: 'coinbase', label: 'Coinbase' },
 ];
 
 export const AVAILABLE_SYMBOLS = [
