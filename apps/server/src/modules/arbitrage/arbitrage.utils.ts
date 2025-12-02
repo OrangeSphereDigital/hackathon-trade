@@ -1,4 +1,4 @@
-import type { Exchange, TickerData } from './type';
+import type { Exchange, TickerData } from "../ticker/type";
 
 export interface ArbitrageRoute {
     buyExchange: Exchange;
@@ -94,15 +94,10 @@ export function calculateArbitrageOpportunity(
     }
 
     // Find the route with the highest profit percentage
-    // Note: We prioritize profit (after fees) over raw spread
     const bestRoute = routes.reduce((prev, current) => 
         (current.profitPercentage > prev.profitPercentage) ? current : prev
     );
 
-    // Check if it meets the threshold
-    // Note: The user's snippet had logic for `afterFee` flag. 
-    // Here we assume we always care about net profit for "best" route, 
-    // but we respect the threshold.
     const hasOpportunity = bestRoute.profitPercentage >= minProfitPercent;
 
     return {

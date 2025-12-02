@@ -5,4 +5,6 @@ export const env = {
     DATABASE_URL: process.env.DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
     TICKER_REDIS_TTL_SEC: process.env.TICKER_REDIS_TTL_SEC,
+    BNB_RPC_URL: process.env.BNB_RPC_URL,
+    BNB_PRIVATE_KEY: process.env.BNB_PRIVATE_KEY,
 }

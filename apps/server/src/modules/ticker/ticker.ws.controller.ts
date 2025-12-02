@@ -3,7 +3,7 @@ import { tickerRedis } from './ticker.redis.service';
 import type { Exchange, TickerData } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
 import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
-import { calculateArbitrageOpportunity } from './arbitrage.utils';
+import { calculateArbitrageOpportunity } from '../arbitrage/arbitrage.utils';
 
 // List of supported exchanges for validation
 const VALID_EXCHANGES = new Set<string>(Object.values(EXCHANGES));

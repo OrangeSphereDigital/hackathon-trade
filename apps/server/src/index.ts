@@ -16,7 +16,7 @@ await redis.flush('ticker:*');
 // --- COLLECTOR MANAGEMENT (HOT RELOAD SAFE) ---
 // Use globalThis to track collectors so they survive hot reloads and can be stopped
 const GLOBAL_KEY = Symbol.for('app.collectors');
-const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null };
+const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null, arbitrage: null };
 (globalThis as any)[GLOBAL_KEY] = globalCollectors;
 
 // Stop existing collectors if they exist (Hot Reload Cleanup)
@@ -28,8 +28,13 @@ if (globalCollectors.kucoin) {
     console.log('[System] Stopping previous KuCoin collector...');
     await globalCollectors.kucoin.stop();
 }
+if (globalCollectors.arbitrage) {
+    console.log('[System] Stopping previous Arbitrage executor...');
+    globalCollectors.arbitrage.stop();
+}
 
 import { SYMBOL_PAIRS } from './constants/constant';
+import { startArbitrageBot, stopArbitrageBot } from "./modules/arbitrage/arbitrage.executor";
 
 // Start the Ticker Collector for supported pairs
 const SUPPORTED_PAIRS = Object.values(SYMBOL_PAIRS);
@@ -42,6 +47,14 @@ const kucoinCollector = new KucoinTickerCollector(SUPPORTED_PAIRS);
 void kucoinCollector.start();
 globalCollectors.kucoin = kucoinCollector;
 
+// Start Arbitrage Executor
+void startArbitrageBot();
+// Store an object with a stop method to satisfy the cleanup contract
+globalCollectors.arbitrage = { stop: stopArbitrageBot };
+
+
+import { adminController } from "./modules/admin/admin.controller";
+
 const app = new Elysia()
 	.use(
 		cors({
@@ -52,6 +65,7 @@ const app = new Elysia()
 		}),
 	)
     .use(tickerWsController)
+    .use(adminController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {

@@ -37,6 +37,7 @@ export class BinanceTickerCollector {
 
   private async connect(): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log('[Binance] Connection URL:', WS_URL);
       this.ws = new WebSocket(WS_URL);
 
       this.ws.onopen = () => {
@@ -56,20 +57,17 @@ export class BinanceTickerCollector {
         const sub = { 
             method: 'SUBSCRIBE', 
             params, 
-            id: 1 
+            id: Math.floor(Math.random() * 100000)
         };
 
         console.log(`[Binance] Subscribing to ${params.length} pairs:`, params);
-        try {
-            this?.ws?.send(JSON.stringify(sub));
-        } catch (e) {
-            console.error('[Binance] Failed to send subscription:', e);
-        }
-
-        // ping every 30s
-        this.pingInterval = setInterval(() => {
-          try { this.ws?.send?.(JSON.stringify({ method: 'PING' })); } catch {}
-        }, 30_000) as unknown as number;
+        setTimeout(() => {
+            try {
+                this?.ws?.send(JSON.stringify(sub));
+            } catch (e) {
+                console.error('[Binance] Failed to send subscription:', e);
+            }
+        }, 2000); // Increased delay to 2s to be safe
 
         resolve();
       };
@@ -97,6 +95,10 @@ export class BinanceTickerCollector {
       };
 
       this.ws.onclose = (evt) => {
+        if (this.pingInterval) {
+          clearInterval(this.pingInterval);
+          this.pingInterval = null;
+        }
         if (!this.isRunning) return;
         console.warn(`[Binance] Closed (Code: ${evt.code}, Reason: ${evt.reason}). Reconnecting...`);
         // simple reconnect
