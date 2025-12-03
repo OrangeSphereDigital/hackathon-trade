@@ -1,4 +1,5 @@
 import React from "react";
+import { ContactForm } from "./ContactForm";
 
 export const EarlyAccessSection = () => {
   return (
@@ -16,7 +17,7 @@ export const EarlyAccessSection = () => {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3 mb-16">
           {/* Card 1 */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-lg">
             <div className="mb-4 text-xs font-bold uppercase tracking-widest text-purple-500">
@@ -83,7 +84,16 @@ export const EarlyAccessSection = () => {
             </ul>
           </div>
         </div>
+
+        <div className="max-w-md mx-auto rounded-xl border border-border bg-card/50 p-8 backdrop-blur-sm">
+          <div className="text-center mb-6">
+             <h3 className="text-2xl font-bold">Request Access</h3>
+             <p className="text-muted-foreground text-sm mt-2">Join the pilot cohort and shape the product.</p>
+          </div>
+          <ContactForm type="early-access" />
+        </div>
       </div>
     </section>
   );
 };
+

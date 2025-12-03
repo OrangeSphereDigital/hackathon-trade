@@ -1,4 +1,5 @@
 import React from "react";
+import { ContactForm } from "./ContactForm";
 
 export const TeamSection = () => {
   return (
@@ -16,7 +17,7 @@ export const TeamSection = () => {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3 mb-16">
           {/* Card 1 */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-lg">
             <h3 className="mb-2 text-xl font-semibold">Michael · Founder</h3>
@@ -27,7 +28,7 @@ export const TeamSection = () => {
 
           {/* Card 2 */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-lg">
-            <h3 className="mb-2 text-xl font-semibold">Shakeel · Co-Founder</h3>
+            <h3 className="mb-2 text-xl font-semibold">Shakil · Co-Founder</h3>
             <p className="text-sm text-muted-foreground">
               Go-to-market and product architecture. Responsible for positioning, user experience, and the execution roadmap that turns the engine into a usable product.
             </p>
@@ -41,7 +42,18 @@ export const TeamSection = () => {
             </p>
           </div>
         </div>
+
+        <div className="max-w-md mx-auto rounded-xl border border-border bg-card/50 p-8 backdrop-blur-sm">
+          <div className="text-center mb-6">
+            <h3 className="text-2xl font-bold">Talk to the Founders</h3>
+            <p className="text-muted-foreground text-sm mt-2">
+              We are building this for you. Tell us what you need.
+            </p>
+          </div>
+          <ContactForm type="founders" />
+        </div>
       </div>
     </section>
   );
 };
+

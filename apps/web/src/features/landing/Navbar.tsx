@@ -5,15 +5,12 @@ import { Menu, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import UserMenu from "@/components/user-menu";
 import { ModeToggle } from "@/components/mode-toggle";
+import { appConfig } from "@/config/app";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navItems = [
-    { label: "Early Access", id: "early-access" },
-    { label: "How it works", id: "how-it-works" },
-    { label: "Hackathon build", id: "hackathon" },
-  ];
+  const navItems = Object.values(appConfig.links);
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/60">
@@ -22,12 +19,12 @@ export const Navbar = () => {
           {/* Left: Logo + Tagline */}
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 font-bold text-black shadow-lg shadow-orange-500/50">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/50 text-lg">
                 21
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-lg font-bold tracking-tight">21seconds2mars</span>
-                <span className="hidden text-[10px] text-muted-foreground md:block">On-chain verified arbitrage signals</span>
+                <span className="text-lg font-bold tracking-tight">{appConfig.name}</span>
+                <span className="hidden text-[10px] text-muted-foreground md:block">{appConfig.description}</span>
               </div>
             </Link>
           </div>
@@ -35,10 +32,12 @@ export const Navbar = () => {
           {/* Right: Pill + Links */}
           <div className="hidden items-center gap-6 md:flex">
             {/* Hackathon Pill */}
-            <div className="flex items-center gap-2 rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
-              <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-              <span>Building for BNB Chain Hackathon · Abu Dhabi</span>
-            </div>
+            {appConfig.hackathon.active && (
+              <div className="flex items-center gap-2 rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground animate-pulse">
+                <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
+                <span>{appConfig.hackathon.label}</span>
+              </div>
+            )}
 
             {/* Links */}
             <div className="flex items-center gap-6 text-sm font-medium">
