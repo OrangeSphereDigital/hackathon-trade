@@ -1,0 +1,153 @@
+import { bnbClient } from "@/lib/bnbClient";
+import prisma from "@root/db";
+import { EXCHANGES, SYMBOL_PAIRS } from "../../constants/constant";
+import { calculateArbitrageOpportunity, type ArbitrageRoute } from "./arbitrage.utils";
+import { tickerRedis } from "../ticker/ticker.redis.service";
+import type { Exchange, TickerData } from "../ticker/type";
+import { Contract, parseEther } from "ethers";
+import { env } from "@/constants/env";
+
+const MIN_PROFIT_THRESHOLD = 0.1;
+const EXECUTION_COOLDOWN_MS = 60000;
+const ARBITRAGE_CONTRACT_ADDRESS = env.BNB_TEST_NET_CONTRACT_ADDRESS;
+
+const ARBITRAGE_ABI = [
+    "function recordOpportunity(string symbol, string buyExchange, string sellExchange, uint256 buyPrice, uint256 sellPrice, uint256 profit, uint256 totalFee)"
+];
+
+const lastExecutionTime: Record<string, number> = {};
+let unsubs: Array<() => void> = [];
+let isRunning = false;
+
+export async function startArbitrageBot() {
+    if (isRunning) return;
+    if (!ARBITRAGE_CONTRACT_ADDRESS) {
+        console.error(
+            "[ArbitrageExecutor] Missing BNB_TEST_NET_CONTRACT_ADDRESS. On-chain logging is disabled."
+        );
+    }
+    isRunning = true;
+    console.log("[ArbitrageExecutor] Starting bot...");
+
+    const exchanges = Object.values(EXCHANGES) as Exchange[];
+    const symbols = Object.values(SYMBOL_PAIRS).map(s => s.replace(/_/g, '').toUpperCase());
+
+    await Promise.all(symbols.map(async (symbol) => {
+        // Subscribe to updates and check immediately on every tick
+        const sub = await tickerRedis.subscribeExchangesLatest(symbol, exchanges, async () => {
+            // Stateless check: Fetch fresh data from Redis directly
+            const rawPrices = await tickerRedis.getExchangesLatest(symbol, exchanges);
+
+            // Filter out null candles to satisfy calculateArbitrageOpportunity typing
+            const prices: Partial<Record<Exchange, TickerData>> = {};
+            for (const [ex, candle] of Object.entries(rawPrices)) {
+                if (candle) {
+                    prices[ex as Exchange] = candle;
+                }
+            }
+
+            // Reuse existing detector
+            const opportunity = calculateArbitrageOpportunity(prices);
+
+            if (opportunity.hasOpportunity && opportunity.bestRoute) {
+                const { profit } = opportunity.bestRoute;
+                const now = Date.now();
+                const lastRun = lastExecutionTime[symbol] || 0;
+
+                if (profit > MIN_PROFIT_THRESHOLD && (now - lastRun > EXECUTION_COOLDOWN_MS)) {
+                    lastExecutionTime[symbol] = now;
+
+                    // 1. Store in DB
+                    const record = await prisma.arbitrageOpportunity.create({
+                        data: {
+                            symbol: symbol,
+                            buyExchange: opportunity.bestRoute.buyExchange,
+                            sellExchange: opportunity.bestRoute.sellExchange,
+                            buyPrice: opportunity.bestRoute.buyPrice,
+                            sellPrice: opportunity.bestRoute.sellPrice,
+                            profit: opportunity.bestRoute.profit,
+                            totalFee: (opportunity.bestRoute as any).totalFee ?? 0,
+                            status: "PENDING"
+                        }
+                    });
+
+                    console.log(`[ArbitrageExecutor] 💾 Saved opportunity to DB: ${record.id}`);
+
+                    // 2. Execute on Chain
+                    await writeArbitrageToBlockchain(symbol, opportunity.bestRoute, record.id);
+                }
+            }
+        });
+        unsubs.push(sub.close);
+    }));
+}
+
+export function stopArbitrageBot() {
+    unsubs.forEach(fn => fn());
+    unsubs = [];
+    isRunning = false;
+    console.log("[ArbitrageExecutor] Bot stopped.");
+}
+
+async function writeArbitrageToBlockchain(symbol: string, route: ArbitrageRoute, dbId: string) {
+    console.log(
+        `[ArbitrageExecutor] 🔗 Found Profit $${route.profit.toFixed(
+            2
+        )} on ${symbol}. Writing to chain...`
+    );
+
+    try {
+        if (!ARBITRAGE_CONTRACT_ADDRESS) {
+            throw new Error("BNB_TEST_NET_CONTRACT_ADDRESS is not set");
+        }
+
+        const signer = bnbClient.getSigner();
+
+        const contract = new Contract(
+            ARBITRAGE_CONTRACT_ADDRESS,
+            ARBITRAGE_ABI,
+            signer
+        );
+
+        const buyPriceWei = parseEther(route.buyPrice.toFixed(18));
+        const sellPriceWei = parseEther(route.sellPrice.toFixed(18));
+        const profitWei = parseEther(route.profit.toFixed(18));
+
+        const totalFeeNumber = (route as any).totalFee ?? 0;
+        const totalFeeWei = parseEther(totalFeeNumber.toFixed(18));
+
+        const tx = await (contract as any).recordOpportunity(
+            symbol,
+            route.buyExchange,
+            route.sellExchange,
+            buyPriceWei,
+            sellPriceWei,
+            profitWei,
+            totalFeeWei
+        );
+
+        console.log(`[ArbitrageExecutor] ✅ Tx Sent: ${tx.hash}`);
+
+        // 3. Update DB with Tx Hash
+        await prisma.arbitrageOpportunity.update({
+            where: { id: dbId },
+            data: {
+                status: "ON_CHAIN",
+                txHash: tx.hash,
+                // blockNumber: tx.blockNumber // might not be available immediately without wait()
+            }
+        });
+
+    } catch (error: any) {
+        console.error(`[ArbitrageExecutor] ❌ Tx Failed:`, error);
+        
+        // 4. Update DB with Error
+        await prisma.arbitrageOpportunity.update({
+            where: { id: dbId },
+            data: {
+                status: "FAILED",
+                error: error?.message || String(error)
+            }
+        });
+    }
+}

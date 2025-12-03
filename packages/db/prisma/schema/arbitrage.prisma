@@ -1,0 +1,24 @@
+model ArbitrageOpportunity {
+  id        String   @id @default(cuid())
+  symbol    String
+  
+  // Route details
+  buyExchange  String
+  sellExchange String
+  buyPrice     Float
+  sellPrice    Float
+  profit       Float
+  totalFee     Float
+  
+  // Blockchain Status
+  status      String   @default("PENDING") // PENDING, ON_CHAIN, FAILED
+  txHash      String?
+  blockNumber Int?
+  error       String?  // To store error messages if it fails
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("arbitrage_opportunities")
+}

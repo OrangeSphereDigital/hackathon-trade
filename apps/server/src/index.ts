@@ -34,7 +34,7 @@ if (globalCollectors.arbitrage) {
 }
 
 import { SYMBOL_PAIRS } from './constants/constant';
-import { startArbitrageBot, stopArbitrageBot } from "./modules/arbitrage/arbitrage.executor";
+import { startArbitrageBot, stopArbitrageBot } from "./modules/arbitrage/arbitrage.bnb.executor";
 
 // Start the Ticker Collector for supported pairs
 const SUPPORTED_PAIRS = Object.values(SYMBOL_PAIRS);
@@ -54,6 +54,7 @@ globalCollectors.arbitrage = { stop: stopArbitrageBot };
 
 
 import { adminController } from "./modules/admin/admin.controller";
+import { arbitrageController } from "./modules/arbitrage/arbitrage.controller";
 
 const app = new Elysia()
 	.use(
@@ -66,6 +67,7 @@ const app = new Elysia()
 	)
     .use(tickerWsController)
     .use(adminController)
+	.use(arbitrageController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {

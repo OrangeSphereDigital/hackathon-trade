@@ -7,4 +7,5 @@ export const env = {
     TICKER_REDIS_TTL_SEC: process.env.TICKER_REDIS_TTL_SEC,
     BNB_RPC_URL: process.env.BNB_RPC_URL,
     BNB_PRIVATE_KEY: process.env.BNB_PRIVATE_KEY,
+    BNB_TEST_NET_CONTRACT_ADDRESS: process.env.BNB_TEST_NET_CONTRACT_ADDRESS,
 }
