@@ -15,7 +15,6 @@ import { Skeleton } from "./ui/skeleton";
 export default function UserMenu() {
 	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
-	console.log(session)
 
 	if (isPending) {
 		return <Skeleton className="h-9 w-9 rounded-full" />;

@@ -1,7 +1,10 @@
-import React from "react";
-import { ContactForm } from "./ContactForm";
+import React, { useState } from "react";
+import { ContactModal } from "./ContactModal";
+import { Button } from "@/components/ui/button";
 
 export const TeamSection = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <section className="py-12 md:py-24" id="team">
       <div className="container mx-auto px-4 md:px-6">
@@ -43,17 +46,24 @@ export const TeamSection = () => {
           </div>
         </div>
 
-        <div className="max-w-md mx-auto rounded-xl border border-border bg-card/50 p-8 backdrop-blur-sm">
-          <div className="text-center mb-6">
-            <h3 className="text-2xl font-bold">Talk to the Founders</h3>
-            <p className="text-muted-foreground text-sm mt-2">
-              We are building this for you. Tell us what you need.
-            </p>
-          </div>
-          <ContactForm type="founders" />
+        <div className="max-w-md mx-auto rounded-xl border border-border bg-card/50 p-8 backdrop-blur-sm text-center">
+          <h3 className="text-2xl font-bold mb-2">Talk to the Founders</h3>
+          <p className="text-muted-foreground text-sm mb-6">
+            We are building this for you. Tell us what you need.
+          </p>
+          <Button onClick={() => setIsModalOpen(true)} variant="outline" className="w-full sm:w-auto">
+            Send us a message
+          </Button>
         </div>
       </div>
+
+      <ContactModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        type="founders" 
+      />
     </section>
   );
 };
+
 
