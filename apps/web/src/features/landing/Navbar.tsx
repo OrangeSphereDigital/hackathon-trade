@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import UserMenu from "@/components/user-menu";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,10 +34,10 @@ export const Navbar = () => {
 
           {/* Right: Pill + Links */}
           <div className="hidden items-center gap-6 md:flex">
-             {/* Hackathon Pill */}
-             <div className="flex items-center gap-2 rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-                <span>Building for BNB Chain Hackathon · Abu Dhabi</span>
+            {/* Hackathon Pill */}
+            <div className="flex items-center gap-2 rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
+              <span>Building for BNB Chain Hackathon · Abu Dhabi</span>
             </div>
 
             {/* Links */}
@@ -51,19 +53,27 @@ export const Navbar = () => {
                 </Link>
               ))}
             </div>
+            <div className="flex items-center gap-2">
+              <UserMenu />
+              <ModeToggle />
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="p-2 text-muted-foreground hover:text-foreground md:hidden"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              className="p-2 text-muted-foreground hover:text-foreground "
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
+            <ModeToggle />
+            <UserMenu />
+          </div>
         </div>
       </div>
 
@@ -72,9 +82,9 @@ export const Navbar = () => {
         <div className="space-y-4 border-b border-border bg-background px-4 py-4 md:hidden">
           {/* Mobile Hackathon Pill */}
           <div className="flex items-center gap-2 rounded-full border border-border/40 bg-background/50 px-3 py-1 text-xs text-muted-foreground w-fit">
-                <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
-                <span>Building for BNB Chain Hackathon</span>
-            </div>
+            <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
+            <span>Building for BNB Chain Hackathon</span>
+          </div>
           {navItems.map((item) => (
             <Link
               key={item.id}
@@ -88,6 +98,8 @@ export const Navbar = () => {
           ))}
         </div>
       )}
+
+
     </nav>
   );
 };

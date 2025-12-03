@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@root/auth";
 // import type { Role } from "prisma/generated/enums"; // TODO: Ensure Role is defined in Prisma Schema
 
 export type Role = "admin" | "user"; // Placeholder until Prisma schema is updated

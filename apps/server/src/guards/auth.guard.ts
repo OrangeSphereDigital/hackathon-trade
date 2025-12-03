@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { auth } from "@/lib/auth";
+import { auth } from "@root/auth";
 
 /**
  * Elysia plugin that enforces authentication.

@@ -55,6 +55,7 @@ globalCollectors.arbitrage = { stop: stopArbitrageBot };
 
 import { adminController } from "./modules/admin/admin.controller";
 import { arbitrageController } from "./modules/arbitrage/arbitrage.controller";
+import { arbitrageAdminController } from "./modules/arbitrage/arbitrage.admin.controller";
 
 const app = new Elysia()
 	.use(
@@ -68,6 +69,7 @@ const app = new Elysia()
     .use(tickerWsController)
     .use(adminController)
 	.use(arbitrageController)
+    .use(arbitrageAdminController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {

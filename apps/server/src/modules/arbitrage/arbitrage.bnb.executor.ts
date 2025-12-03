@@ -6,6 +6,7 @@ import { tickerRedis } from "../ticker/ticker.redis.service";
 import type { Exchange, TickerData } from "../ticker/type";
 import { Contract, parseEther } from "ethers";
 import { env } from "@/constants/env";
+import { arbitrageStatus } from "./arbitrage.status.service";
 
 const MIN_PROFIT_THRESHOLD = 0.1;
 const EXECUTION_COOLDOWN_MS = 60000;
@@ -27,7 +28,10 @@ export async function startArbitrageBot() {
         );
     }
     isRunning = true;
-    console.log("[ArbitrageExecutor] Starting bot...");
+    arbitrageStatus.setStatus({ isRunning: true });
+    const logStart = "[ArbitrageExecutor] Starting bot...";
+    console.log(logStart);
+    arbitrageStatus.addLog('info', logStart);
 
     const exchanges = Object.values(EXCHANGES) as Exchange[];
     const symbols = Object.values(SYMBOL_PAIRS).map(s => s.replace(/_/g, '').toUpperCase());
@@ -35,6 +39,9 @@ export async function startArbitrageBot() {
     await Promise.all(symbols.map(async (symbol) => {
         // Subscribe to updates and check immediately on every tick
         const sub = await tickerRedis.subscribeExchangesLatest(symbol, exchanges, async () => {
+            // Update heartbeat to show we are alive and checking
+            arbitrageStatus.updateLastCheck();
+
             // Stateless check: Fetch fresh data from Redis directly
             const rawPrices = await tickerRedis.getExchangesLatest(symbol, exchanges);
 
@@ -50,6 +57,9 @@ export async function startArbitrageBot() {
             const opportunity = calculateArbitrageOpportunity(prices);
 
             if (opportunity.hasOpportunity && opportunity.bestRoute) {
+                // Update status for monitoring
+                arbitrageStatus.updateOpportunity(symbol, opportunity.bestRoute);
+
                 const { profit } = opportunity.bestRoute;
                 const now = Date.now();
                 const lastRun = lastExecutionTime[symbol] || 0;
@@ -71,7 +81,9 @@ export async function startArbitrageBot() {
                         }
                     });
 
-                    console.log(`[ArbitrageExecutor] 💾 Saved opportunity to DB: ${record.id}`);
+                    const logSaved = `[ArbitrageExecutor] 💾 Saved opportunity to DB: ${record.id}`;
+                    console.log(logSaved);
+                    arbitrageStatus.addLog('info', logSaved);
 
                     // 2. Execute on Chain
                     await writeArbitrageToBlockchain(symbol, opportunity.bestRoute, record.id);
@@ -86,15 +98,16 @@ export function stopArbitrageBot() {
     unsubs.forEach(fn => fn());
     unsubs = [];
     isRunning = false;
-    console.log("[ArbitrageExecutor] Bot stopped.");
+    arbitrageStatus.setStatus({ isRunning: false });
+    const logStop = "[ArbitrageExecutor] Bot stopped.";
+    console.log(logStop);
+    arbitrageStatus.addLog('info', logStop);
 }
 
 async function writeArbitrageToBlockchain(symbol: string, route: ArbitrageRoute, dbId: string) {
-    console.log(
-        `[ArbitrageExecutor] 🔗 Found Profit $${route.profit.toFixed(
-            2
-        )} on ${symbol}. Writing to chain...`
-    );
+    const logFound = `[ArbitrageExecutor] 🔗 Found Profit $${route.profit.toFixed(2)} on ${symbol}. Writing to chain...`;
+    console.log(logFound);
+    arbitrageStatus.addLog('info', logFound);
 
     try {
         if (!ARBITRAGE_CONTRACT_ADDRESS) {
@@ -126,7 +139,9 @@ async function writeArbitrageToBlockchain(symbol: string, route: ArbitrageRoute,
             totalFeeWei
         );
 
-        console.log(`[ArbitrageExecutor] ✅ Tx Sent: ${tx.hash}`);
+        const logTx = `[ArbitrageExecutor] ✅ Tx Sent: ${tx.hash}`;
+        console.log(logTx);
+        arbitrageStatus.addLog('info', logTx);
 
         // 3. Update DB with Tx Hash
         await prisma.arbitrageOpportunity.update({
@@ -140,6 +155,7 @@ async function writeArbitrageToBlockchain(symbol: string, route: ArbitrageRoute,
 
     } catch (error: any) {
         console.error(`[ArbitrageExecutor] ❌ Tx Failed:`, error);
+        arbitrageStatus.addLog('error', `[ArbitrageExecutor] ❌ Tx Failed: ${error?.message || String(error)}`);
         
         // 4. Update DB with Error
         await prisma.arbitrageOpportunity.update({
