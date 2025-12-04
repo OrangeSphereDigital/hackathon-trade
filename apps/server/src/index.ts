@@ -57,6 +57,7 @@ import { adminController } from "./modules/admin/admin.controller";
 import { arbitrageController } from "./modules/arbitrage/arbitrage.controller";
 import { arbitrageAdminController } from "./modules/arbitrage/arbitrage.admin.controller";
 import { contactController } from "./modules/contact/contact.controller";
+import { spreadHistoryController } from "./modules/spread-history/spread-history.controller";
 
 const app = new Elysia()
 	.use(
@@ -72,6 +73,7 @@ const app = new Elysia()
 	.use(arbitrageController)
     .use(arbitrageAdminController)
     .use(contactController)
+    .use(spreadHistoryController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {

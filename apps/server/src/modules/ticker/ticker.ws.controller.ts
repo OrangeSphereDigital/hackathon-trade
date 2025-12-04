@@ -4,6 +4,7 @@ import type { Exchange, TickerData } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
 import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
 import { calculateArbitrageOpportunity } from '../arbitrage/arbitrage.utils';
+import { spreadHistoryService } from '../spread-history/spread-history.service';
 
 // List of supported exchanges for validation
 const VALID_EXCHANGES = new Set<string>(Object.values(EXCHANGES));
@@ -85,6 +86,33 @@ export const tickerWsController = new Elysia()
                 // [ { "SOL_USDT": { prices: {...}, arbitrage: {...} } } ]
                 const payload = Object.entries(pendingUpdates).map(([sym, prices]) => {
                     const arb = calculateArbitrageOpportunity(prices);
+
+                    // Record spread history per exchange pair (buyExchange -> sellExchange)
+                    const exchanges = Object.keys(prices) as Exchange[];
+                    const now = Date.now();
+                    for (const buyEx of exchanges) {
+                        for (const sellEx of exchanges) {
+                            if (buyEx === sellEx) continue;
+
+                            const buyTick = (prices as any)[buyEx] as TickerData | undefined;
+                            const sellTick = (prices as any)[sellEx] as TickerData | undefined;
+                            if (!buyTick?.bestAsk || !sellTick?.bestBid) continue;
+
+                            const buyPrice = buyTick.bestAsk;
+                            const sellPrice = sellTick.bestBid;
+                            const spread = sellPrice - buyPrice;
+                            const spreadPercentage = (spread / buyPrice) * 100;
+
+                            void spreadHistoryService.addSample({
+                                symbol: sym,
+                                buyExchange: buyEx,
+                                sellExchange: sellEx,
+                                spreadPercentage,
+                                ts: now,
+                            });
+                        }
+                    }
+
                     return {
                         [sym]: {
                             prices: prices,

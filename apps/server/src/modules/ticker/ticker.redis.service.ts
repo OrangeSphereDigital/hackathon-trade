@@ -107,6 +107,7 @@ async function subscribeExchangesLatest(
   exchanges: Exchange[], 
   onCandle: (exchange: Exchange, candle: TickerData) => void
 ) {
+  // console.log({env})
   // Create subscriptions for each exchange
   const unsubs = await Promise.all(
     exchanges.map(exchange => 
