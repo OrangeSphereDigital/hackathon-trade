@@ -21,16 +21,16 @@ const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kuc
 
 // Stop existing collectors if they exist (Hot Reload Cleanup)
 if (globalCollectors.binance) {
-    console.log('[System] Stopping previous Binance collector...');
-    await globalCollectors.binance.stop();
+	console.log('[System] Stopping previous Binance collector...');
+	await globalCollectors.binance.stop();
 }
 if (globalCollectors.kucoin) {
-    console.log('[System] Stopping previous KuCoin collector...');
-    await globalCollectors.kucoin.stop();
+	console.log('[System] Stopping previous KuCoin collector...');
+	await globalCollectors.kucoin.stop();
 }
 if (globalCollectors.arbitrage) {
-    console.log('[System] Stopping previous Arbitrage executor...');
-    globalCollectors.arbitrage.stop();
+	console.log('[System] Stopping previous Arbitrage executor...');
+	globalCollectors.arbitrage.stop();
 }
 
 import { SYMBOL_PAIRS } from './constants/constant';
@@ -58,6 +58,7 @@ import { arbitrageController } from "./modules/arbitrage/arbitrage.controller";
 import { arbitrageAdminController } from "./modules/arbitrage/arbitrage.admin.controller";
 import { contactController } from "./modules/contact/contact.controller";
 import { spreadHistoryController } from "./modules/spread-history/spread-history.controller";
+import { env } from "./constants/env";
 
 const app = new Elysia()
 	.use(
@@ -68,12 +69,12 @@ const app = new Elysia()
 			credentials: true,
 		}),
 	)
-    .use(tickerWsController)
-    .use(adminController)
+	.use(tickerWsController)
+	.use(adminController)
 	.use(arbitrageController)
-    .use(arbitrageAdminController)
-    .use(contactController)
-    .use(spreadHistoryController)
+	.use(arbitrageAdminController)
+	.use(contactController)
+	.use(spreadHistoryController)
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {
@@ -82,8 +83,8 @@ const app = new Elysia()
 		return status(405);
 	})
 	.get("/", () => "OK")
-	.listen(3000, () => {
-		console.log("Server is running on http://localhost:3000");
+	.listen(env.PORT!, () => {
+		console.log(`Server is running on http://localhost:${env.PORT}`);
 	});
 
 app.use(swagger({

@@ -8,4 +8,6 @@ export const env = {
     BNB_RPC_URL: process.env.BNB_RPC_URL,
     BNB_PRIVATE_KEY: process.env.BNB_PRIVATE_KEY,
     BNB_TEST_NET_CONTRACT_ADDRESS: process.env.BNB_TEST_NET_CONTRACT_ADDRESS,
+    NODE_ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT,
 }
