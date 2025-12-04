@@ -30,14 +30,15 @@ export async function recordSpreadSample(sample: SpreadSample): Promise<void> {
   if (!Number.isFinite(sample.spreadPercentage)) return;
 
   const ts = sample.ts ?? Date.now();
-  const payload: MaxSpreadRecord = { p: sample.spreadPercentage, t: ts };
+  const value = Math.abs(sample.spreadPercentage);
+  const payload: MaxSpreadRecord = { p: value, t: ts };
 
   const { buyExchange, sellExchange, symbol } = sample;
 
   // 1h max spread
   const k1h = keyMax1h({ buyExchange, sellExchange, symbol });
   const cur1h = await redis.get<MaxSpreadRecord | null>(k1h);
-  const shouldReplace1h = !cur1h || ts - cur1h.t > HOUR_MS || sample.spreadPercentage > cur1h.p;
+  const shouldReplace1h = !cur1h || ts - cur1h.t > HOUR_MS || value > cur1h.p;
   if (shouldReplace1h) {
     await redis.set(k1h, payload, Math.ceil(HOUR_MS / 1000));
   }
@@ -45,7 +46,7 @@ export async function recordSpreadSample(sample: SpreadSample): Promise<void> {
   // 24h max spread
   const k24 = keyMax24h({ buyExchange, sellExchange, symbol });
   const cur24 = await redis.get<MaxSpreadRecord | null>(k24);
-  const shouldReplace24 = !cur24 || ts - cur24.t > DAY_MS || sample.spreadPercentage > cur24.p;
+  const shouldReplace24 = !cur24 || ts - cur24.t > DAY_MS || value > cur24.p;
   if (shouldReplace24) {
     await redis.set(k24, payload, Math.ceil(DAY_MS / 1000));
   }

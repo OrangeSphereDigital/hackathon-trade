@@ -1,7 +1,7 @@
-import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SymbolTickerData, Exchange } from './types';
+import { SpreadPct } from './SpreadPct';
 
 interface ArbitrageCardProps {
     symbol: string;
@@ -107,6 +107,14 @@ export function ArbitrageCard({ symbol, data }: ArbitrageCardProps) {
                 <div className={cn("font-medium text-lg", isProfitPositive ? "text-green-500" : "text-red-500")}>
                     After Fees: {profitValue.toFixed(5)} ({profitPct.toFixed(2)}%)
                 </div>
+
+                {bestRoute && (
+                    <SpreadPct
+                        symbol={symbol}
+                        buyExchange={bestRoute.buyExchange}
+                        sellExchange={bestRoute.sellExchange}
+                    />
+                )}
             </div>
         </div>
     );
