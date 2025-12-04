@@ -20,13 +20,15 @@ export default function UserMenu() {
 		return <Skeleton className="h-9 w-9 rounded-full" />;
 	}
 
-	if (!session) {
+	if (!session || !session.user) {
 		return (
 			<Button variant="outline" asChild>
 				<Link to="/login">Sign In</Link>
 			</Button>
 		);
 	}
+
+	const user = session.user;
 
 	return (
 		<DropdownMenu>
@@ -40,15 +42,15 @@ export default function UserMenu() {
 				<DropdownMenuLabel>
 					<div className="flex flex-col space-y-1">
 						<p className="text-sm font-medium leading-none">
-							{session.user.name}
+							{user?.name ?? "User"}
 						</p>
 						<p className="text-xs leading-none text-muted-foreground">
-							{session.user.email}
+							{user?.email ?? ""}
 						</p>
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				{session.user.role === "admin" && (
+				{user?.role === "admin" && (
 					<DropdownMenuItem asChild>
 						<Link to="/admin">Admin Dashboard</Link>
 					</DropdownMenuItem>
