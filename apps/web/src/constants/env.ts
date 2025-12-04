@@ -1,3 +1,3 @@
 export const env = {
-    SERVER_URL: import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000",
+    SERVER_URL: import.meta.env.VITE_SERVER_URL ?? "https://api.21seconds2mars.com",
 }
