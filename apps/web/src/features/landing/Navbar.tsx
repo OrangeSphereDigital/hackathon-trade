@@ -18,29 +18,16 @@ export const Navbar = () => {
         <div className="relative flex h-16 items-center justify-between">
           {/* Left: Logo + Tagline */}
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="flex size-12 items-center justify-center rounded-full bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/50 text-xl md:text-2xl">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex size-14 items-center justify-center rounded-full bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/50 text-2xl md:text-3xl">
                 21
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-lg md:text-xl font-bold tracking-tight">{appConfig.name}</span>
-                <span className="hidden text-[10px] text-muted-foreground md:block">{appConfig.description}</span>
+                <span className="text-xl md:text-2xl font-bold tracking-tight">{appConfig.name}</span>
+                <span className="hidden text-sm font-semibold text-muted-foreground md:block">{appConfig.description}</span>
               </div>
             </Link>
           </div>
-
-          {/* Center: Hackathon Pill - Absolutely positioned to be dead center */}
-          {appConfig.hackathon.active && (
-            <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block">
-              <div className="flex items-center gap-2 rounded-full border border-green-500/30 bg-green-500/10 px-4 py-1.5 text-sm font-medium text-green-500 animate-pulse">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                </span>
-                <span>{appConfig.hackathon.label}</span>
-              </div>
-            </div>
-          )}
 
           {/* Right: Links */}
           <div className="hidden items-center gap-6 md:flex">

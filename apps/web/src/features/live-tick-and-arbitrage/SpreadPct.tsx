@@ -30,7 +30,7 @@ export function SpreadPct({ symbol, buyExchange, sellExchange }: SpreadPctProps)
   const max24h = summary?.last24h.maxSpreadPercentage ?? null;
 
   return (
-    <div className="text-xs text-muted-foreground space-y-0.5">
+    <div className="text-sm font-medium text-muted-foreground space-y-1">
       <div>
         1h Max Spread: {max1h != null ? `${max1h > 0 ? '+' : ''}${max1h.toFixed(2)}%` : '--'}
       </div>

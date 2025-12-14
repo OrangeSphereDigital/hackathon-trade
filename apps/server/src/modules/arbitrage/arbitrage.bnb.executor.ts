@@ -12,6 +12,8 @@ const MIN_PROFIT_THRESHOLD = 0.1;
 const EXECUTION_COOLDOWN_MS = 60000;
 const ARBITRAGE_CONTRACT_ADDRESS = env.BNB_TEST_NET_CONTRACT_ADDRESS;
 
+const DEFAULT_SIMULATION_TRADE_AMOUNT_USD = 100;
+
 const ARBITRAGE_ABI = [
     "function recordOpportunity(string symbol, string buyExchange, string sellExchange, uint256 buyPrice, uint256 sellPrice, uint256 profit, uint256 totalFee)"
 ];
@@ -79,6 +81,33 @@ export async function startArbitrageBot() {
                             totalFee: (opportunity.bestRoute as any).totalFee ?? 0,
                             status: "PENDING"
                         }
+                    });
+
+                    // 1.1 Store simulated trade (1:1) for dashboard simulation
+                    const amountUsdRaw = Number(env.SIMULATION_TRADE_AMOUNT_USD);
+                    const amountUsd = Number.isFinite(amountUsdRaw)
+                        ? amountUsdRaw
+                        : DEFAULT_SIMULATION_TRADE_AMOUNT_USD;
+
+                    const buyPrice = opportunity.bestRoute.buyPrice;
+                    const sellPrice = opportunity.bestRoute.sellPrice;
+                    const totalFeePerBase = (opportunity.bestRoute as any).totalFee ?? 0;
+
+                    // Convert USD to base amount using the buy price
+                    const amountBase = buyPrice > 0 ? amountUsd / buyPrice : 0;
+                    const estimatedProfit = ((sellPrice - buyPrice) * amountBase) - (totalFeePerBase * amountBase);
+
+                    await prisma.simulatedTrade.create({
+                        data: {
+                            opportunityId: record.id,
+                            symbol,
+                            buyExchange: opportunity.bestRoute.buyExchange,
+                            sellExchange: opportunity.bestRoute.sellExchange,
+                            buyPrice,
+                            sellPrice,
+                            amountUsd,
+                            estimatedProfit,
+                        },
                     });
 
                     const logSaved = `[ArbitrageExecutor] 💾 Saved opportunity to DB: ${record.id}`;

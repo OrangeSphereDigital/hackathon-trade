@@ -1,8 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { client } from "@/lib/client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
 export const Route = createFileRoute("/arbitrage")({
     component: ArbitragePage,
@@ -33,34 +36,33 @@ type ArbitrageItem = {
 };
 
 function ArbitragePage() {
-    const [items, setItems] = useState<ArbitrageItem[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const { data, error } = await client.arbitrage.index.get({
-                    query: { limit: 50 }
-                });
-                if (data) {
-                    setItems(data.items as any); // Type casting might be needed if client types aren't perfectly synced yet
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
+    const { data: items = [], isLoading: loading, refetch, isRefetching } = useQuery({
+        queryKey: ["arbitrage-history"],
+        queryFn: async () => {
+            const { data } = await client.arbitrage.index.get({
+                query: { limit: 50 }
+            });
+            return (data?.items as ArbitrageItem[]) ?? [];
         }
-        fetchData();
-    }, []);
+    });
 
     return (
         <div className="container mx-auto py-8 space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Arbitrage History</h1>
-                <p className="text-muted-foreground">
-                    On-chain execution records from BNB Testnet.
-                </p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Arbitrage History</h1>
+                    <p className="text-muted-foreground">
+                        On-chain execution records from BNB Testnet.
+                    </p>
+                </div>
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => refetch()}
+                    disabled={isRefetching}
+                >
+                    <RefreshCcw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
+                </Button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-1">

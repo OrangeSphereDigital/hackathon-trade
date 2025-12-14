@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/auth-client";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LiveTicker } from "@/features/live-tick-and-arbitrage";
+import { SimulatedTradesCard } from "@/features/simulated/SimulatedTradesCard";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -30,6 +31,8 @@ function RouteComponent() {
 			</div>
 
 			<LiveTicker />
+
+			<SimulatedTradesCard />
 		</div>
 	);
 }

@@ -10,6 +10,8 @@ model ArbitrageOpportunity {
   profit       Float
   totalFee     Float
   
+  simulatedTrade SimulatedTrade?
+  
   // Blockchain Status
   status      String   @default("PENDING") // PENDING, ON_CHAIN, FAILED
   txHash      String?
@@ -21,4 +23,24 @@ model ArbitrageOpportunity {
 
   @@index([status])
   @@map("arbitrage_opportunities")
+}
+
+model SimulatedTrade {
+  id            String   @id @default(cuid())
+  opportunityId String   @unique
+  opportunity   ArbitrageOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  symbol       String
+  buyExchange  String
+  sellExchange String
+  buyPrice     Float
+  sellPrice    Float
+
+  amountUsd        Float
+  estimatedProfit  Float
+
+  createdAt DateTime @default(now())
+
+  @@index([symbol])
+  @@map("simulated_trades")
 }
