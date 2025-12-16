@@ -2,6 +2,7 @@ import { authClient } from "@/lib/auth-client";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LiveTicker } from "@/features/live-tick-and-arbitrage";
 import { SimulatedTradesCard } from "@/features/simulated/SimulatedTradesCard";
+import Header from "@/components/header";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -20,19 +21,20 @@ export const Route = createFileRoute("/dashboard")({
 function RouteComponent() {
 	const { session } = Route.useRouteContext();
 	return (
-		<div className="container mx-auto py-8 space-y-8">
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-					<p className="text-muted-foreground">
-						Welcome back, {session.data?.user.name}
-					</p>
+		<div className="container mx-auto">
+			<Header />
+			<div className="py-8 space-y-8">
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+						<p className="text-muted-foreground">
+							Welcome back, {session.data?.user.name}
+						</p>
+					</div>
 				</div>
+				<LiveTicker />
+				<SimulatedTradesCard />
 			</div>
-
-			<LiveTicker />
-
-			<SimulatedTradesCard />
-		</div>
+		</ div>
 	);
 }

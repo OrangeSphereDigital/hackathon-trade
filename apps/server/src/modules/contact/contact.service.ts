@@ -1,5 +1,6 @@
 import prisma from "@root/db";
 import type { ContactRequest } from "./contact.dto";
+import { sendInformAdminEmail } from "../../lib/email";
 
 export class ContactService {
     async createEarlyAccess(data: ContactRequest) {
@@ -11,6 +12,20 @@ export class ContactService {
                 message: data.message
             }
         });
+
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
+        if (adminEmail) {
+            await sendInformAdminEmail({
+                to: adminEmail,
+                subject: "New Early Access Request",
+                type: "early-access",
+                name: data.name,
+                email: data.email,
+                phone: data.phone ?? null,
+                message: data.message ?? null,
+            });
+        }
+
         return result;
     }
 
@@ -23,9 +38,20 @@ export class ContactService {
                 message: data.message
             }
         });
-        
-        await this.sendFounderEmail(data);
-        
+
+        const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL;
+        if (adminEmail) {
+            await sendInformAdminEmail({
+                to: adminEmail,
+                subject: "New Founder Contact Submission",
+                type: "founder-contact",
+                name: data.name,
+                email: data.email,
+                phone: data.phone ?? null,
+                message: data.message ?? null,
+            });
+        }
+
         return result;
     }
 
@@ -42,7 +68,6 @@ export class ContactService {
     }
 
     private async sendFounderEmail(data: ContactRequest) {
-        // TODO: Implement email sending logic
         console.log(`[ContactService] Mock sending email to founders from ${data.email}`);
     }
 }
