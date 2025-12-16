@@ -9,8 +9,8 @@ import {
 import { authClient } from "@/lib/auth-client";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
-import { Button } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
+import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 
 export default function UserMenu() {
 	const navigate = useNavigate();
@@ -33,7 +33,7 @@ export default function UserMenu() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" size="icon" className="rounded-full">
+				<Button variant="outline" size="icon" className="size-10">
 					<User className="h-5 w-5" />
 					<span className="sr-only">User menu</span>
 				</Button>
@@ -52,7 +52,7 @@ export default function UserMenu() {
 				<DropdownMenuSeparator />
 				{user?.role === "admin" && (
 					<DropdownMenuItem asChild>
-						<Link to="/admin">Admin Dashboard</Link>
+						<Link to="/admin/dashboard">Admin Dashboard</Link>
 					</DropdownMenuItem>
 				)}
 				<DropdownMenuItem asChild>

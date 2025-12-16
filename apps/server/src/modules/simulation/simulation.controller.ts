@@ -8,12 +8,12 @@ export const simulationController = new Elysia({ prefix: "/simulation" })
         "/",
         async ({ query }) => {
             const { limit = 20, offset = 0 } = query;
-            const items = await (prisma as any).simulatedTrade.findMany({
+            const items = await prisma.simulatedTrade.findMany({
                 take: Number(limit),
                 skip: Number(offset),
                 orderBy: { createdAt: "desc" },
             });
-            const total = await (prisma as any).simulatedTrade.count();
+            const total = await prisma.simulatedTrade.count();
             return { items, total };
         },
         {

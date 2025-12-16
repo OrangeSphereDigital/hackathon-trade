@@ -13,7 +13,7 @@ model ArbitrageOpportunity {
   simulatedTrade SimulatedTrade?
   
   // Blockchain Status
-  status      String   @default("PENDING") // PENDING, ON_CHAIN, FAILED
+  status      String   @default("DETECTED") // DETECTED, ON_CHAIN, FAILED
   txHash      String?
   blockNumber Int?
   error       String?  // To store error messages if it fails

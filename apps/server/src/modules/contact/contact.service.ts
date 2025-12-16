@@ -29,6 +29,18 @@ export class ContactService {
         return result;
     }
 
+    async getAllEarlyAccess() {
+        return await prisma.earlyAccess.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async getAllFounderContacts() {
+        return await prisma.founderContact.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
     private async sendFounderEmail(data: ContactRequest) {
         // TODO: Implement email sending logic
         console.log(`[ContactService] Mock sending email to founders from ${data.email}`);

@@ -2,6 +2,8 @@ import { Elysia } from "elysia";
 import { contactService } from "./contact.service";
 import { ContactRequestDTO } from "./contact.dto";
 
+import { rolesGuard } from "../../guards/role.guard";
+
 export const contactController = new Elysia({ prefix: "/contact" })
     .post(
         "/early-access",
@@ -30,4 +32,34 @@ export const contactController = new Elysia({ prefix: "/contact" })
                 description: "Send a message directly to the founders."
             }
         }
+    )
+    .guard({
+        beforeHandle: rolesGuard(["admin"])
+    }, (app) => app
+        .get(
+            "/early-access",
+            async () => {
+                return await contactService.getAllEarlyAccess();
+            },
+            {
+                detail: {
+                    tags: ["Contact", "Admin"],
+                    summary: "Get all early access requests",
+                    description: "Retrieve all early access submissions. Admin only."
+                }
+            }
+        )
+        .get(
+            "/founders",
+            async () => {
+                return await contactService.getAllFounderContacts();
+            },
+            {
+                detail: {
+                    tags: ["Contact", "Admin"],
+                    summary: "Get all founder contacts",
+                    description: "Retrieve all founder contact messages. Admin only."
+                }
+            }
+        )
     );

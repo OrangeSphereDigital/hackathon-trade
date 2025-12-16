@@ -55,6 +55,7 @@ export async function startArbitrageBot() {
                 }
             }
 
+            // ^ Add data in simulator for analysis
             // Reuse existing detector
             const opportunity = calculateArbitrageOpportunity(prices);
 
@@ -78,8 +79,8 @@ export async function startArbitrageBot() {
                             buyPrice: opportunity.bestRoute.buyPrice,
                             sellPrice: opportunity.bestRoute.sellPrice,
                             profit: opportunity.bestRoute.profit,
-                            totalFee: (opportunity.bestRoute as any).totalFee ?? 0,
-                            status: "PENDING"
+                            totalFee: (opportunity.bestRoute).totalFee ?? 0,
+                            status: "DETECTED"
                         }
                     });
 

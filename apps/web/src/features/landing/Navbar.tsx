@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import UserMenu from "@/components/user-menu";
-import { ModeToggle } from "@/components/mode-toggle";
+import UserMenu from "@/components/core/user-menu";
+import { ModeToggle } from "@/components/core/mode-toggle";
 import { appConfig } from "@/config/app";
+import { Logo } from "@/components/core/Logo";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,17 +18,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="relative flex h-16 items-center justify-between">
           {/* Left: Logo + Tagline */}
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="flex size-14 items-center justify-center rounded-full bg-orange-500 font-bold text-white shadow-lg shadow-orange-500/50 text-2xl md:text-3xl">
-                21
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-xl md:text-2xl font-bold tracking-tight">{appConfig.name}</span>
-                <span className="hidden text-sm font-semibold text-muted-foreground md:block">{appConfig.description}</span>
-              </div>
-            </Link>
-          </div>
+          <Logo />
 
           {/* Right: Links */}
           <div className="hidden items-center gap-6 md:flex">
