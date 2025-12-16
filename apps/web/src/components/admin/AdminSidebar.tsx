@@ -7,18 +7,41 @@ import {
   SidebarItem,
 } from '@/components/ui/sidebar'
 import { Logo } from '@/components/core/Logo'
-import { useRouter } from '@tanstack/react-router'
+import { useRouter, useLocation } from '@tanstack/react-router'
 
 export type AdminViewState = 'dashboard' | 'early-access' | 'founder-contact'
 
 export function AdminSidebar() {
   const [activeView, setActiveView] = useState<AdminViewState>('dashboard')
-  const { navigate } = useRouter()
+  const { navigate, } = useRouter()
+  const location  = useLocation()
 
   const handleNavigate = (view: AdminViewState, path: string) => {
     setActiveView(view)
     navigate({ to: path as any })
   }
+
+  const items = [
+    {
+      url: "/admin/dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      view: "dashboard" as AdminViewState,
+    },
+    {
+      url: "/admin/early-access",
+      label: "Early Access",
+      icon: Users,
+      view: "early-access" as AdminViewState,
+    },
+    {
+      url: "/admin/founder-contact",
+      label: "Founder Contact",
+      icon: MessageSquare,
+      view: "founder-contact" as AdminViewState,
+    },
+  ] as const
+
 
   return (
     <>
@@ -27,26 +50,18 @@ export function AdminSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu className="pt-2">
-          <SidebarItem
-            icon={LayoutDashboard}
-            label="Dashboard"
-            active={activeView === 'dashboard'}
-            onClick={() => handleNavigate('dashboard', '/admin/dashboard')}
-          />
-          <SidebarItem
-            icon={Users}
-            label="Early Access"
-            active={activeView === 'early-access'}
-            onClick={() => handleNavigate('early-access', '/admin/early-access')}
-          />
-          <SidebarItem
-            icon={MessageSquare}
-            label="Founder Contact"
-            active={activeView === 'founder-contact'}
-            onClick={() =>
-              handleNavigate('founder-contact', '/admin/founder-contact')
-            }
-          />
+          {items.map((item) => {
+            const isActive = location.pathname === item.url
+            return (
+              <SidebarItem
+                key={item.url}
+                icon={item.icon}
+                label={item.label}
+                active={isActive}
+                onClick={() => handleNavigate(item.view, item.url)}
+              />
+            )
+          })}
         </SidebarMenu>
       </SidebarContent>
     </>

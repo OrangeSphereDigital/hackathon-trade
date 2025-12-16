@@ -5,8 +5,9 @@ import {
 } from '@/components/ui/sidebar'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/layout/AdminHeader'
+import { cn } from '@/lib/utils'
 
-export function AdminLayout({ children }: { children: any }) {
+export function AdminLayout({ children, className = "" }: { children: any, className?: string }) {
     return (
         <SidebarProvider>
             <Sidebar collapsible="icon">
@@ -14,7 +15,7 @@ export function AdminLayout({ children }: { children: any }) {
             </Sidebar>
             <SidebarInset>
                 <AdminHeader />
-                <main className="flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-950 p-6">
+                <main className={cn("flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-950 p-4", className)}>
                     {children}
                 </main>
             </SidebarInset>

@@ -2,10 +2,11 @@ import { FounderContactList } from '@/features/admin/founder-contact/list'
 import { createFileRoute } from '@tanstack/react-router';
 import { authClient } from '@/lib/auth-client';
 import { redirect } from '@tanstack/react-router';
+import { AdminLayout } from '@/layout/AdminLayout';
 
 
 export const Route = createFileRoute('/admin/founder-contact')({
-    component: FounderContactList,
+    component: Page,
     beforeLoad: async () => {
         const session = await authClient.getSession();
         if (!session.data) {
@@ -25,6 +26,10 @@ export const Route = createFileRoute('/admin/founder-contact')({
 })
 
 export default function Page() {
-    return <FounderContactList />;
+    return (
+    <AdminLayout>
+        <FounderContactList />
+    </AdminLayout>
+    );
 }
 
