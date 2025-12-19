@@ -85,31 +85,31 @@ export async function startArbitrageBot() {
                     });
 
                     // 1.1 Store simulated trade (1:1) for dashboard simulation
-                    const amountUsdRaw = Number(env.SIMULATION_TRADE_AMOUNT_USD);
-                    const amountUsd = Number.isFinite(amountUsdRaw)
-                        ? amountUsdRaw
-                        : DEFAULT_SIMULATION_TRADE_AMOUNT_USD;
+                    // const amountUsdRaw = Number(env.SIMULATION_TRADE_AMOUNT_USD);
+                    // const amountUsd = Number.isFinite(amountUsdRaw)
+                    //     ? amountUsdRaw
+                    //     : DEFAULT_SIMULATION_TRADE_AMOUNT_USD;
 
-                    const buyPrice = opportunity.bestRoute.buyPrice;
-                    const sellPrice = opportunity.bestRoute.sellPrice;
-                    const totalFeePerBase = (opportunity.bestRoute as any).totalFee ?? 0;
+                    // const buyPrice = opportunity.bestRoute.buyPrice;
+                    // const sellPrice = opportunity.bestRoute.sellPrice;
+                    // const totalFeePerBase = (opportunity.bestRoute as any).totalFee ?? 0;
 
                     // Convert USD to base amount using the buy price
-                    const amountBase = buyPrice > 0 ? amountUsd / buyPrice : 0;
-                    const estimatedProfit = ((sellPrice - buyPrice) * amountBase) - (totalFeePerBase * amountBase);
+                    // const amountBase = buyPrice > 0 ? amountUsd / buyPrice : 0;
+                    // const estimatedProfit = ((sellPrice - buyPrice) * amountBase) - (totalFeePerBase * amountBase);
 
-                    await prisma.simulatedTrade.create({
-                        data: {
-                            opportunityId: record.id,
-                            symbol,
-                            buyExchange: opportunity.bestRoute.buyExchange,
-                            sellExchange: opportunity.bestRoute.sellExchange,
-                            buyPrice,
-                            sellPrice,
-                            amountUsd,
-                            estimatedProfit,
-                        },
-                    });
+                    // await prisma.simulatedTrade.create({
+                    //     data: {
+                    //         opportunityId: record.id,
+                    //         symbol,
+                    //         buyExchange: opportunity.bestRoute.buyExchange,
+                    //         sellExchange: opportunity.bestRoute.sellExchange,
+                    //         buyPrice,
+                    //         sellPrice,
+                    //         amountUsd,
+                    //         estimatedProfit,
+                    //     },
+                    // });
 
                     const logSaved = `[ArbitrageExecutor] 💾 Saved opportunity to DB: ${record.id}`;
                     console.log(logSaved);
