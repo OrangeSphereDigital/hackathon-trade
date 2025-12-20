@@ -3,6 +3,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { LiveTicker } from "@/features/live-tick-and-arbitrage";
 import { SimulatedTradesCard } from "@/features/simulated/SimulatedTradesCard";
 import Header from "@/components/header";
+import { ArbitrageList } from "@/features/arbitrage/List";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -23,7 +24,7 @@ function RouteComponent() {
 	return (
 		<div className="container mx-auto">
 			<Header />
-			<div className="py-8 space-y-8">
+			<div className="py-8 space-y-8 px-4">
 				<div className="flex items-center justify-between">
 					<div>
 						<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -33,6 +34,7 @@ function RouteComponent() {
 					</div>
 				</div>
 				<LiveTicker />
+				<ArbitrageList />
 				<SimulatedTradesCard />
 			</div>
 		</ div>

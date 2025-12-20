@@ -9,6 +9,8 @@ import { SimulatedTradesSummary } from "./SimulatedTradesSummary";
 import { SimulatedTradeRow } from "./SimulatedTradeRow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DatePicker } from "./DatePicker";
 
 type ArbitrageItem = {
 	id: string;
@@ -136,7 +138,7 @@ export function SimulatedTradesCard({
 
 
 	return (
-		<Card>
+		<Card className="overflow-hidden">
 			<CardHeader>
 				<CardTitle className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
@@ -167,12 +169,9 @@ export function SimulatedTradesCard({
 						<Label htmlFor="dateFrom">From</Label>
 						<form.Field name="dateFrom">
 							{(field) => (
-								<Input
-									id={field.name}
-									type="date"
-									value={field.state.value ?? ""}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
+								<DatePicker
+									value={field.state.value}
+									onChange={(val) => field.handleChange(val)}
 								/>
 							)}
 						</form.Field>
@@ -181,12 +180,9 @@ export function SimulatedTradesCard({
 						<Label htmlFor="dateTo">To</Label>
 						<form.Field name="dateTo">
 							{(field) => (
-								<Input
-									id={field.name}
-									type="date"
-									value={field.state.value ?? ""}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
+								<DatePicker
+									value={field.state.value}
+									onChange={(val) => field.handleChange(val)}
 								/>
 							)}
 						</form.Field>
@@ -195,19 +191,21 @@ export function SimulatedTradesCard({
 						<Label htmlFor="dailyAmount">Daily amount (USD)</Label>
 						<form.Field name="dailyAmount">
 							{(field) => (
-								<select
-									id={field.name}
-									className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-									value={field.state.value ?? 1000}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(Number(e.target.value))}
+								<Select
+									value={String(field.state.value ?? 1000)}
+									onValueChange={(val) => field.handleChange(Number(val))}
 								>
-									<option value={100}>$100</option>
-									<option value={1000}>$1,000</option>
-									<option value={10000}>$10,000</option>
-									<option value={50000}>$50,000</option>
-									<option value={100000}>$100,000</option>
-								</select>
+									<SelectTrigger className="h-10 w-full justify-between text-left font-normal">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="100">$100</SelectItem>
+										<SelectItem value="1000">$1,000</SelectItem>
+										<SelectItem value="10000">$10,000</SelectItem>
+										<SelectItem value="50000">$50,000</SelectItem>
+										<SelectItem value="100000">$100,000</SelectItem>
+									</SelectContent>
+								</Select>
 							)}
 						</form.Field>
 					</div>
