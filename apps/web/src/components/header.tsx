@@ -1,32 +1,29 @@
-import { Link } from "@tanstack/react-router";
 import { ModeToggle } from "./core/mode-toggle";
 import UserMenu from "./core/user-menu";
 import { Logo } from "./core/Logo";
 
 export default function Header() {
 	const links = [
-		{ to: "/", label: "Home" },
-		{ to: "/dashboard", label: "Dashboard" },
-		{ to: "/arbitrage", label: "Arbitrage" },
+		{ to: "#monitor", label: "Live Monitor" },
+		{ to: "#arbitrage", label: "Arbitrage" },
+		{ to: "#simulation", label: "Arbitrage" },
 	] as const;
 
 	return (
 		<div>
-			<div className="flex flex-row items-center justify-between px-2 py-2 ">
-				<nav className="flex gap-4 text-lg items-center">
-					<Logo/>
+			<div className="flex flex-row items-center justify-between px-2 py-3 bg-background">
+				<Logo />
+				<nav className="flex gap-4 text-lg justify-end items-center">
 					{links.map(({ to, label }) => {
 						return (
-							<Link key={to} to={to}>
+							<a key={to} href={to}>
 								{label}
-							</Link>
+							</a>
 						);
 					})}
-				</nav>
-				<div className="flex items-center gap-2">
 					<ModeToggle />
 					<UserMenu />
-				</div>
+				</nav>
 			</div>
 			<hr />
 		</div>

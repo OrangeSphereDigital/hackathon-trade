@@ -58,9 +58,9 @@ export default function UserMenu() {
 				<DropdownMenuItem asChild>
 					<Link to="/dashboard">Dashboard</Link>
 				</DropdownMenuItem>
-				<DropdownMenuItem asChild>
+				{/* <DropdownMenuItem asChild>
 					<Link to="/arbitrage">Arbitrage</Link>
-				</DropdownMenuItem>
+				</DropdownMenuItem> */}
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
 					<Button
