@@ -4,9 +4,11 @@ import { client } from "@/lib/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
+import { SimulatedTradesSummary } from "./SimulatedTradesSummary";
+import { SimulatedTradeRow } from "./SimulatedTradeRow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCcw } from "lucide-react";
 
 type ArbitrageItem = {
 	id: string;
@@ -51,6 +53,8 @@ export function SimulatedTradesCard({
 			// Default to last 24 hours
 			dateFrom: yesterday,
 			dateTo: today,
+			// Daily trade amount in USD
+			dailyAmount: 1000,
 		},
 		onSubmit: () => {
 			// No-op: we react to value changes directly via query key
@@ -96,34 +100,40 @@ export function SimulatedTradesCard({
 	});
 
 	const opportunities = (data?.items as ArbitrageItem[]) ?? [];
-	const SIMULATION_TRADE_AMOUNT_USD = 1000;
+	const DAILY_TRADES_COUNT = 10;
+	const dailyAmount = Number(values.dailyAmount) || 1000;
+	const amountPerTrade = dailyAmount * 0.1; // 10% per trade
 
-	const simTrades: SimulatedTradeItem[] = opportunities.map((o) => {
-		const amountUsd = SIMULATION_TRADE_AMOUNT_USD;
-		const amountBase = o.buyPrice > 0 ? amountUsd / o.buyPrice : 0;
-		// o.profit is net profit per 1 base unit, so scale by amountBase
-		const estimatedProfit = o.profit * amountBase;
+	const simTrades: SimulatedTradeItem[] = opportunities
+		.slice(0, DAILY_TRADES_COUNT)
+		.map((o) => {
+			const amountUsd = amountPerTrade;
+			const amountBase = o.buyPrice > 0 ? amountUsd / o.buyPrice : 0;
+			// o.profit is net profit per 1 base unit, so scale by amountBase
+			const estimatedProfit = o.profit * amountBase;
 
-		return {
-			id: o.id,
-			opportunityId: o.id,
-			symbol: o.symbol,
-			buyExchange: o.buyExchange,
-			sellExchange: o.sellExchange,
-			buyPrice: o.buyPrice,
-			sellPrice: o.sellPrice,
-			amountUsd,
-			estimatedProfit,
-			createdAt: o.createdAt,
-		};
-	});
+			return {
+				id: o.id,
+				opportunityId: o.id,
+				symbol: o.symbol,
+				buyExchange: o.buyExchange,
+				sellExchange: o.sellExchange,
+				buyPrice: o.buyPrice,
+				sellPrice: o.sellPrice,
+				amountUsd,
+				estimatedProfit,
+				createdAt: o.createdAt,
+			};
+		});
+
+	const totalProfit = simTrades.reduce((sum, t) => sum + t.estimatedProfit, 0);
 	const total = data?.total ?? 0;
 	const totalPages = total > 0 ? Math.ceil(total / limit) : 1;
 
 	const canGoPrev = values.page > 1;
 	const canGoNext = values.page < totalPages;
 
-	
+
 
 	return (
 		<Card>
@@ -151,7 +161,7 @@ export function SimulatedTradesCard({
 						e.stopPropagation();
 						form.handleSubmit();
 					}}
-					className="mb-4 grid gap-4 md:grid-cols-4 md:items-end"
+					className="mb-4 grid gap-4 md:grid-cols-5 md:items-end"
 				>
 					<div className="space-y-1 md:col-span-1">
 						<Label htmlFor="dateFrom">From</Label>
@@ -178,6 +188,26 @@ export function SimulatedTradesCard({
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
 								/>
+							)}
+						</form.Field>
+					</div>
+					<div className="space-y-1 md:col-span-1">
+						<Label htmlFor="dailyAmount">Daily amount (USD)</Label>
+						<form.Field name="dailyAmount">
+							{(field) => (
+								<select
+									id={field.name}
+									className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+									value={field.state.value ?? 1000}
+									onBlur={field.handleBlur}
+									onChange={(e) => field.handleChange(Number(e.target.value))}
+								>
+									<option value={100}>$100</option>
+									<option value={1000}>$1,000</option>
+									<option value={10000}>$10,000</option>
+									<option value={50000}>$50,000</option>
+									<option value={100000}>$100,000</option>
+								</select>
 							)}
 						</form.Field>
 					</div>
@@ -209,41 +239,15 @@ export function SimulatedTradesCard({
 						</Button>
 					</div>
 				</form>
+				<SimulatedTradesSummary totalTrades={simTrades.length} totalProfit={totalProfit} />
 				{loading ? (
 					<div className="text-muted-foreground">Loading...</div>
 				) : simTrades.length === 0 ? (
 					<div className="text-muted-foreground">No simulated trades yet.</div>
 				) : (
-					<div className="space-y-3">
+					<div className="space-y-2">
 						{simTrades?.map((t) => (
-							<div
-								key={t.id}
-								className="flex flex-col gap-1 rounded-lg border p-3 md:flex-row md:items-center md:justify-between"
-							>
-								<div>
-									<div className="font-semibold">{t.symbol}</div>
-									<div className="text-sm text-muted-foreground">
-										{t.buyExchange} → {t.sellExchange}
-									</div>
-									<div className="text-xs text-muted-foreground">
-										${t.amountUsd.toFixed(2)} • {new Date(t.createdAt).toLocaleString()}
-									</div>
-								</div>
-								<div className="text-right">
-									<div
-										className={
-											t.estimatedProfit >= 0
-												? "font-bold text-green-500"
-												: "font-bold text-red-500"
-										}
-									>
-										{t.estimatedProfit >= 0 ? "+" : ""}${t.estimatedProfit.toFixed(4)}
-									</div>
-									<div className="text-xs text-muted-foreground">
-										Buy ${t.buyPrice.toFixed(4)} • Sell ${t.sellPrice.toFixed(4)}
-									</div>
-								</div>
-							</div>
+							<SimulatedTradeRow key={t.id} trade={t} />
 						))}
 					</div>
 				)}
