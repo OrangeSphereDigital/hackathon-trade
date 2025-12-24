@@ -6,7 +6,7 @@ export default function Header() {
 	const links = [
 		{ to: "#monitor", label: "Live Monitor" },
 		{ to: "#arbitrage", label: "Arbitrage" },
-		{ to: "#simulation", label: "Arbitrage" },
+		{ to: "#simulation", label: "Simulation" },
 	] as const;
 
 	return (

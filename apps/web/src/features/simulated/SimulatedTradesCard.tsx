@@ -10,7 +10,7 @@ import { SimulatedTradeRow } from "./SimulatedTradeRow";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePicker } from "./DatePicker";
+import { DatePicker } from "../../components/ui/DatePicker";
 
 type ArbitrageItem = {
 	id: string;
@@ -46,14 +46,14 @@ export function SimulatedTradesCard({
 }: SimulatedTradesCardProps) {
 	const now = new Date();
 	const today = now.toISOString().slice(0, 10);
-	const yesterdayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-	const yesterday = yesterdayDate.toISOString().slice(0, 10);
+	const startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+	const start = startDate.toISOString().slice(0, 10);
 
 	const form = useForm({
 		defaultValues: {
 			page: 1,
 			// Default to last 24 hours
-			dateFrom: yesterday,
+			dateFrom: start,
 			dateTo: today,
 			// Daily trade amount in USD
 			dailyAmount: 1000,
