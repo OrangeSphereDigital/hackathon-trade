@@ -1,4 +1,4 @@
-export type Exchange = 'binance' | 'kucoin' | 'dydx' | 'coinbase' | 'jupiter';
+export type Exchange = 'binance' | 'kucoin' | 'dydx' | 'coinbase' | 'jupiter' | 'okx';
 
 export interface TickerData {
   time: number; // epoch seconds UTC

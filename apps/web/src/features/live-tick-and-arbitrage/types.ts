@@ -1,11 +1,11 @@
-export type Exchange = 'binance' | 'kucoin' | 'dydx' | 'coinbase' | 'jupiter';
+export type Exchange = 'binance' | 'kucoin' | 'dydx' | 'coinbase' | 'jupiter' | 'okx';
 
 export interface TickerData {
-  time: number; // epoch seconds UTC
-  bestBid: number; // Sell Price
-  bestAsk: number; // Buy Price
-  lastPrice: number; // Last Trade / Mid Price
-  type: "real" | "synthetic";
+    time: number; // epoch seconds UTC
+    bestBid: number; // Sell Price
+    bestAsk: number; // Buy Price
+    lastPrice: number; // Last Trade / Mid Price
+    type: "real" | "synthetic";
 }
 
 export interface ArbitrageRoute {

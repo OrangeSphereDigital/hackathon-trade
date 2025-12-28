@@ -6,6 +6,7 @@ import { auth } from "@root/auth";
 import { tickerWsController } from "./modules/ticker/ticker.ws.controller";
 import { BinanceTickerCollector } from "./modules/binance/collector";
 import { KucoinTickerCollector } from "./modules/kucoin/collector";
+import { OkxTickerCollector } from "./modules/okx/collector";
 import { redis } from "@/lib/redis";
 
 // --- INIT & CLEANUP ---
@@ -16,7 +17,7 @@ await redis.flush('ticker:*');
 // --- COLLECTOR MANAGEMENT (HOT RELOAD SAFE) ---
 // Use globalThis to track collectors so they survive hot reloads and can be stopped
 const GLOBAL_KEY = Symbol.for('app.collectors');
-const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null, arbitrage: null };
+const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null, okx: null, arbitrage: null };
 (globalThis as any)[GLOBAL_KEY] = globalCollectors;
 
 // Stop existing collectors if they exist (Hot Reload Cleanup)
@@ -27,6 +28,10 @@ if (globalCollectors.binance) {
 if (globalCollectors.kucoin) {
 	console.log('[System] Stopping previous KuCoin collector...');
 	await globalCollectors.kucoin.stop();
+}
+if (globalCollectors.okx) {
+	console.log('[System] Stopping previous OKX collector...');
+	await globalCollectors.okx.stop();
 }
 if (globalCollectors.arbitrage) {
 	console.log('[System] Stopping previous Arbitrage executor...');
@@ -46,6 +51,10 @@ globalCollectors.binance = binanceCollector;
 const kucoinCollector = new KucoinTickerCollector(SUPPORTED_PAIRS);
 void kucoinCollector.start();
 globalCollectors.kucoin = kucoinCollector;
+
+const okxCollector = new OkxTickerCollector(SUPPORTED_PAIRS);
+void okxCollector.start();
+globalCollectors.okx = okxCollector;
 
 // Start Arbitrage Executor
 void startArbitrageBot();

@@ -14,6 +14,7 @@ const EXCHANGE_COLORS: Record<string, string> = {
     coinbase: 'bg-green-500/20 text-green-500 border-green-500/20',
     kucoin: 'bg-teal-500/20 text-teal-500 border-teal-500/20',
     kraken: 'bg-blue-500/20 text-blue-500 border-blue-500/20',
+    okx: 'bg-zinc-500/20 text-zinc-200 border-zinc-500/20',
 };
 
 export function ArbitrageCard({ symbol, data }: ArbitrageCardProps) {
