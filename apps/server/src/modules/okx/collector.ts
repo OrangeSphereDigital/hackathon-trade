@@ -1,5 +1,5 @@
 import { getAggregator } from "../ticker/candle-agg";
-import { OKX_WS_URL } from "./constant";
+import { OKX_WS_URL, OKX_PAIRS } from "./constant";
 
 export class OkxTickerCollector {
     private ws: WebSocket | null = null;
@@ -44,12 +44,21 @@ export class OkxTickerCollector {
                 const args = this.symbols
                     .filter(Boolean)
                     .map(s => {
-                        const instId = s.replace(/_/g, '-'); // SOL_USDT -> SOL-USDT
+                        // Use strict mapping from OKX_PAIRS
+                        const normalizedKey = s.toLowerCase(); // sol_usdt
+                        const instId = (OKX_PAIRS as any)[normalizedKey];
+
+                        if (!instId) {
+                            console.warn(`[OKX] No mapping found for symbol: ${s}`);
+                            return null;
+                        }
+
                         return {
                             channel: "tickers",
                             instId: instId
                         };
-                    });
+                    })
+                    .filter(Boolean); // Filter out nulls
 
                 if (args.length === 0) {
                     console.warn('[OKX] No symbols to subscribe to');
@@ -115,8 +124,11 @@ export class OkxTickerCollector {
                         const price = (bid + ask) / 2; // Mid price
                         const time = ts || Date.now();
 
-                        // Convert to internal symbol: BTC-USDT -> BTCUSDT
-                        const internalSymbol = instId.replace(/-/g, '');
+                        // Reverse map: SOL-USDT -> SOLUSDT / SOL_USDT
+                        // We need the internal canonical symbol (e.g. SOLUSDT as used in other modules)
+                        // If we used the map for subscription, we can just strip hyphens for canonical or look it up.
+                        // For canonical redis purposes, we just want 'SOLUSDT' (uppercase, no separator)
+                        const internalSymbol = instId.replace(/-/g, '').replace(/_/g, '').toUpperCase();
 
                         getAggregator('okx', internalSymbol).tick(time, price, bid, ask);
                     }

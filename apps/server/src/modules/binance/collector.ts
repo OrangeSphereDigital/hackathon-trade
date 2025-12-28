@@ -1,6 +1,7 @@
 import { getAggregator } from "../ticker/candle-agg";
-import {BINANCE_WS_URL} from "./constant"
+import { BINANCE_WS_URL } from "./constant"
 // import { getAggregator } from './candle-agg';
+import { BINANCE_PAIRS } from "./constant"; // Assuming BINANCE_PAIRS is exported from ./constant
 
 // Use global WebSocket from Bun
 const WS_URL = BINANCE_WS_URL;
@@ -42,31 +43,40 @@ export class BinanceTickerCollector {
 
       this.ws.onopen = () => {
         console.log('[Binance] Connected');
-        
+
         // Subscribe to all symbols
-        // Normalize: SOL_USDT -> solusdt
+        // Use strict mapping from BINANCE_PAIRS
         const params = this.symbols
-            .filter(Boolean)
-            .map(s => `${s.replace(/_/g, '').toLowerCase()}@bookTicker`);
+          .filter(Boolean)
+          .map(s => {
+            const normalizedKey = s.toLowerCase(); // sol_usdt
+            const binanceSymbol = (BINANCE_PAIRS as any)[normalizedKey];
+            if (!binanceSymbol) {
+              console.warn(`[Binance] No mapping found for symbol: ${s}`);
+              return null;
+            }
+            return `${binanceSymbol.toLowerCase()}@bookTicker`;
+          })
+          .filter(Boolean);
 
         if (params.length === 0) {
-            console.warn('[Binance] No symbols to subscribe to');
-            return;
+          console.warn('[Binance] No symbols to subscribe to');
+          return;
         }
 
-        const sub = { 
-            method: 'SUBSCRIBE', 
-            params, 
-            id: Math.floor(Math.random() * 100000)
+        const sub = {
+          method: 'SUBSCRIBE',
+          params,
+          id: Math.floor(Math.random() * 100000)
         };
 
         console.log(`[Binance] Subscribing to ${params.length} pairs:`, params);
         setTimeout(() => {
-            try {
-                this?.ws?.send(JSON.stringify(sub));
-            } catch (e) {
-                console.error('[Binance] Failed to send subscription:', e);
-            }
+          try {
+            this?.ws?.send(JSON.stringify(sub));
+          } catch (e) {
+            console.error('[Binance] Failed to send subscription:', e);
+          }
         }, 2000); // Increased delay to 2s to be safe
 
         resolve();
@@ -77,15 +87,15 @@ export class BinanceTickerCollector {
           const msg = JSON.parse(String(evt.data));
           const tick = parseBinanceBookTicker(msg);
           if (!tick) return;
-          
+
           const bid = Number(tick.bidPrice);
           const ask = Number(tick.askPrice);
           const price = (bid + ask) / 2;
           const time = tick.eventTime ?? Date.now();
-          
+
           // Use the symbol from the tick data (normalized to uppercase)
           getAggregator('binance', tick.symbol.toUpperCase()).tick(time, price, bid, ask);
-        } catch {}
+        } catch { }
       };
 
       this.ws.onerror = (err) => {
@@ -102,7 +112,7 @@ export class BinanceTickerCollector {
         if (!this.isRunning) return;
         console.warn(`[Binance] Closed (Code: ${evt.code}, Reason: ${evt.reason}). Reconnecting...`);
         // simple reconnect
-        setTimeout(() => this.connect().catch(() => {}), 1000);
+        setTimeout(() => this.connect().catch(() => { }), 1000);
       };
     });
   }

@@ -2,6 +2,8 @@ import { Elysia, t } from 'elysia';
 import { tickerRedis } from './ticker.redis.service';
 import type { Exchange, TickerData } from './type';
 import { BINANCE_PAIRS } from '../binance/constant';
+import { KUCOIN_PAIRS } from '../kucoin/constant';
+import { OKX_PAIRS } from '../okx/constant';
 import { EXCHANGES, SYMBOL_PAIRS } from '../../constants/constant';
 import { calculateArbitrageOpportunity } from '../arbitrage/arbitrage.utils';
 import { spreadHistoryService } from '../spread-history/spread-history.service';
@@ -23,11 +25,17 @@ const subscriptions = new WeakMap<any, { close: () => void }>();
 // as long as their Collectors normalize to this same Canonical format.
 function resolveInternalSymbol(userSymbol: string): string {
     const lower = userSymbol.toLowerCase();
-    // 1. Try strict lookup in BINANCE_PAIRS
-    // Since keys in BINANCE_PAIRS are like 'sol_usdt', we try to match that
-    if (lower in BINANCE_PAIRS) {
-        return (BINANCE_PAIRS as any)[lower];
+
+    // 1. Try strict lookup in Exchange Constants
+    if (lower in BINANCE_PAIRS) return (BINANCE_PAIRS as any)[lower];
+    if (lower in KUCOIN_PAIRS) return (KUCOIN_PAIRS as any)[lower];
+
+    if (lower in OKX_PAIRS) {
+        // OKX Pairs are like "SOL-USDT", we need "SOLUSDT"
+        const val = (OKX_PAIRS as any)[lower];
+        return val.replace(/-/g, '').replace(/_/g, '').toUpperCase();
     }
+
     // 2. Fallback: Remove underscores (SOL_USDT -> SOLUSDT)
     return userSymbol.replace(/_/g, '').toUpperCase();
 }
@@ -36,7 +44,7 @@ export const tickerWsController = new Elysia()
     .ws('/ticker', {
         query: t.Object({
             exchanges: t.String({
-                description: `Comma-separated list of exchanges. Supported: ${Object.values(EXCHANGES).join(', ')}` 
+                description: `Comma-separated list of exchanges. Supported: ${Object.values(EXCHANGES).join(', ')}`
             }),
             symbols: t.String({
                 description: `Comma-separated list of symbols. Supported: ${Object.values(SYMBOL_PAIRS).join(', ')}`
@@ -46,7 +54,7 @@ export const tickerWsController = new Elysia()
         async open(ws) {
             // 1. Parse and Validate Inputs
             const { exchanges: exchangesStr, symbols: symbolsStr } = ws.data.query;
-            
+
             const requestedExchanges = exchangesStr.split(',')
                 .map(s => s.trim().toLowerCase())
                 .filter(s => VALID_EXCHANGES.has(s)) as Exchange[];
@@ -64,7 +72,7 @@ export const tickerWsController = new Elysia()
             // 2. Initialize State
             // Structure: { "SOL_USDT": { "binance": Candle, "kucoin": Candle } }
             const connectionState: Record<string, Partial<Record<Exchange, TickerData>>> = {};
-            
+
             // Initialize empty objects for each symbol to ensure structure exists
             for (const sym of requestedSymbols) {
                 connectionState[sym] = {};
@@ -81,7 +89,7 @@ export const tickerWsController = new Elysia()
                     flushTimer = null;
                     return;
                 }
-                
+
                 // Send as Array of Objects with new structure:
                 // [ { "SOL_USDT": { prices: {...}, arbitrage: {...} } } ]
                 const payload = Object.entries(pendingUpdates).map(([sym, prices]) => {
@@ -120,9 +128,9 @@ export const tickerWsController = new Elysia()
                         }
                     };
                 });
-                
+
                 ws.send(payload);
-                
+
                 // Clear buffer
                 for (const key in pendingUpdates) delete pendingUpdates[key];
                 flushTimer = null;

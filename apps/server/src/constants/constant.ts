@@ -1,6 +1,7 @@
 export const EXCHANGES = {
     binance: 'binance',
-    kucoin: 'kucoin'
+    kucoin: 'kucoin',
+    okx: 'okx'
 };
 
 export const SYMBOL_PAIRS = {

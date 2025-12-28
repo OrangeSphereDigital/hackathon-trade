@@ -1,5 +1,5 @@
 import { getAggregator } from "../ticker/candle-agg";
-import { KUCOIN_BULLET_URL } from "./constant";
+import { KUCOIN_BULLET_URL, KUCOIN_PAIRS } from "./constant";
 
 export class KucoinTickerCollector {
   private ws: WebSocket | null = null;
@@ -27,15 +27,15 @@ export class KucoinTickerCollector {
 
   async stop() {
     this.isRunning = false;
-    if (this.pingInterval) { 
-      clearInterval(this.pingInterval); 
-      this.pingInterval = null; 
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
     }
-    if (this.reconnectTimer) { 
-      clearTimeout(this.reconnectTimer); 
-      this.reconnectTimer = null; 
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
     }
-    try { this.ws?.close(); } catch {}
+    try { this.ws?.close(); } catch { }
     this.ws = null;
   }
 
@@ -43,18 +43,18 @@ export class KucoinTickerCollector {
     try {
       const resp = await fetch(KUCOIN_BULLET_URL, { method: 'POST' });
       const json = await resp.json() as any;
-      
+
       if (json?.code !== '200000' || !json?.data) {
         throw new Error('Invalid KuCoin bullet response');
       }
-      
+
       const { token, instanceServers } = json.data;
       const server = instanceServers?.[0];
-      
+
       if (!token || !server?.endpoint) {
         throw new Error('Missing KuCoin bullet fields');
       }
-      
+
       this.wsUrl = `${server.endpoint}?token=${token}`;
     } catch (error) {
       console.error('[KuCoin] Token refresh failed:', error);
@@ -64,10 +64,10 @@ export class KucoinTickerCollector {
 
   private scheduleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) return;
-    
+
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts++), 30_000);
     console.log(`[KuCoin] Reconnecting in ${delay}ms...`);
-    
+
     this.reconnectTimer = setTimeout(async () => {
       try {
         await this.refreshToken();
@@ -90,10 +90,29 @@ export class KucoinTickerCollector {
 
       this.ws.onopen = () => {
         console.log('[KuCoin] Connected');
-        
+
         // Convert internal symbols (SOLUSDT) to KuCoin symbols (SOL-USDT)
+        // Use strict mapping from KUCOIN_PAIRS
         const topicSymbols = this.symbols
-          .map(s => s.replace(/_/g, '').replace('USDT', '-USDT'))
+          .map(s => {
+            const normalizedKey = s.toLowerCase(); // sol_usdt
+            const symbol = (KUCOIN_PAIRS as any)[normalizedKey];
+            if (!symbol) return null;
+            // KuCoin uses hyphen: SOL-USDT. Our constant has "SOLUSDT".
+            // Start: SOLUSDT -> SOL-USDT
+            // We can rely on a regex insert or just re-map if constant had it.
+            // Current constant: SOLUSDT. We need SOL-USDT.
+
+            // Actually, looking at previous code: s.replace(/_/g, '').replace('USDT', '-USDT')
+            // previous was transforming SOL_USDT -> SOL-USDT
+
+            // If we trust KUCOIN_PAIRS has "SOLUSDT", we need to format it for Kucoin API
+            // Kucoin API needs "SOL-USDT"
+
+            // Let's assume KUCOIN_PAIRS values are just internal IDs (SOLUSDT).
+            // We need to transform that to SOL-USDT
+            return symbol.replace('USDT', '-USDT');
+          })
           .filter(Boolean)
           .join(',');
 
@@ -111,43 +130,43 @@ export class KucoinTickerCollector {
 
         // ping using KuCoin format
         this.pingInterval = setInterval(() => {
-          try { 
-            this.ws?.send?.(JSON.stringify({ id: Date.now(), type: 'ping' })); 
-          } catch {}
+          try {
+            this.ws?.send?.(JSON.stringify({ id: Date.now(), type: 'ping' }));
+          } catch { }
         }, 30_000) as unknown as number;
-        
+
         resolve();
       };
 
       this.ws.onmessage = (evt) => {
         try {
           const msg = JSON.parse(String(evt.data));
-          
+
           // Filter for ticker messages
           if (msg.type !== 'message' || !msg.data || !msg.subject) {
-             // console.log('[KuCoin] Ignored msg type:', msg.type);
-             return;
+            // console.log('[KuCoin] Ignored msg type:', msg.type);
+            return;
           }
-          
+
           // msg.topic is like "/market/ticker:SOL-USDT"
           // Extract symbol from topic
           const topic = msg.topic || '';
           const kucoinSymbol = topic.split(':').pop();
-          
+
           if (!kucoinSymbol) return;
 
           // Reverse map: SOL-USDT -> SOLUSDT
           const internalSymbol = kucoinSymbol.replace(/-/g, '');
-          
+
           const data = msg.data;
           const bid = Number(data.bestBid);
           const ask = Number(data.bestAsk);
-          
+
           if (!isFinite(bid) || !isFinite(ask)) return;
-          
+
           const price = (bid + ask) / 2;
           const time = Number(data.time) || Date.now();
-          
+
           // Feed the aggregator
           getAggregator('kucoin', internalSymbol).tick(time, price, bid, ask);
         } catch (e) {
