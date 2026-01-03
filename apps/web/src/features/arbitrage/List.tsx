@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { format, subDays } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/client";
 import type { ArbitrageItem } from "./type";
@@ -10,9 +11,8 @@ export const ArbitrageList = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [from, setFrom] = useState<string>(
-    new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000).toDateString()
+    format(subDays(new Date(), 30), "yyyy-MM-dd")
   );
-  console.log(from)
   const [to, setTo] = useState<string>("");
 
   const { data, isLoading, isRefetching, refetch } = useQuery<{

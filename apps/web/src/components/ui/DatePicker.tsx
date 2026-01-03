@@ -7,22 +7,19 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
   value: string | undefined;
   onChange: (value: string) => void;
-  // max?: number;
-  // min?: number;
 }
 
 export function DatePicker({ value, onChange }: DatePickerProps) {
-  const date = value ? new Date(value) : undefined;
-
-  // const now = new Date().getTime();
-
-  // const maxDays = !!max ? now + max * 24 * 60 * 60 : undefined;
-  // const minDays = !!max ? now - max * 24 * 60 * 60 : undefined;
+  // Parse the date string as a local date by appending the time component if it's missing
+  const date = value
+    ? new Date(value.includes("T") ? value : `${value}T00:00:00`)
+    : undefined;
 
   return (
     <Popover>
@@ -35,7 +32,7 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? date.toLocaleDateString() : <span>Pick a date</span>}
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -44,8 +41,8 @@ export function DatePicker({ value, onChange }: DatePickerProps) {
           selected={date}
           onSelect={(day) => {
             if (!day) return;
-            const iso = day.toISOString().slice(0, 10);
-            onChange(iso);
+            // Format the date in local YYYY-MM-DD instead of using toISOString (which is UTC)
+            onChange(format(day, "yyyy-MM-dd"));
           }}
           initialFocus
         />
