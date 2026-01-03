@@ -8,6 +8,7 @@ import { BinanceTickerCollector } from "./modules/binance/collector";
 import { KucoinTickerCollector } from "./modules/kucoin/collector";
 import { OkxTickerCollector } from "./modules/okx/collector";
 import { redis } from "@/lib/redis";
+import { env } from "./constants/env";
 
 // --- INIT & CLEANUP ---
 // Clean old ticker data from Redis on startup
@@ -17,6 +18,7 @@ await redis.flush('ticker:*');
 // --- COLLECTOR MANAGEMENT (HOT RELOAD SAFE) ---
 // Use globalThis to track collectors so they survive hot reloads and can be stopped
 const GLOBAL_KEY = Symbol.for('app.collectors');
+
 const globalCollectors = (globalThis as any)[GLOBAL_KEY] || { binance: null, kucoin: null, okx: null, arbitrage: null };
 (globalThis as any)[GLOBAL_KEY] = globalCollectors;
 
@@ -40,6 +42,7 @@ if (globalCollectors.arbitrage) {
 
 import { SYMBOL_PAIRS } from './constants/constant';
 import { startArbitrageBot, stopArbitrageBot } from "./modules/arbitrage/arbitrage.bnb.executor";
+import { app } from "./modules/app";
 
 // Start the Ticker Collector for supported pairs
 const SUPPORTED_PAIRS = Object.values(SYMBOL_PAIRS);
@@ -52,42 +55,30 @@ const kucoinCollector = new KucoinTickerCollector(SUPPORTED_PAIRS);
 void kucoinCollector.start();
 globalCollectors.kucoin = kucoinCollector;
 
-const okxCollector = new OkxTickerCollector(SUPPORTED_PAIRS);
-void okxCollector.start();
-globalCollectors.okx = okxCollector;
+if (env.NODE_ENV !== 'local') {
+	const okxCollector = new OkxTickerCollector(SUPPORTED_PAIRS);
+	void okxCollector.start();
+	globalCollectors.okx = okxCollector;
+}
+
+
 
 // Start Arbitrage Executor
 void startArbitrageBot();
 // Store an object with a stop method to satisfy the cleanup contract
 globalCollectors.arbitrage = { stop: stopArbitrageBot };
 
+const server = new Elysia()
+	.use(cors({
+		origin: process.env.CORS_ORIGIN || "",
+		methods: ["GET", "POST", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+		credentials: true,
+	}))
 
-import { adminController } from "./modules/admin/admin.controller";
-import { arbitrageController } from "./modules/arbitrage/arbitrage.controller";
-import { arbitrageAdminController } from "./modules/arbitrage/arbitrage.admin.controller";
-import { contactController } from "./modules/contact/contact.controller";
-import { spreadHistoryController } from "./modules/spread-history/spread-history.controller";
-import { simulationController } from "./modules/simulation/simulation.controller";
-import { usersController } from "./modules/users/users.controller";
-import { env } from "./constants/env";
-
-const app = new Elysia()
-	.use(
-		cors({
-			origin: process.env.CORS_ORIGIN || "",
-			methods: ["GET", "POST", "OPTIONS"],
-			allowedHeaders: ["Content-Type", "Authorization"],
-			credentials: true,
-		}),
-	)
 	.use(tickerWsController)
-	.use(adminController)
-	.use(arbitrageController)
-	.use(arbitrageAdminController)
-	.use(simulationController)
-	.use(contactController)
-	.use(spreadHistoryController)
-	.use(usersController)
+	.use(app)
+
 	.all("/api/auth/*", async (context) => {
 		const { request, status } = context;
 		if (["POST", "GET"].includes(request.method)) {
@@ -100,10 +91,10 @@ const app = new Elysia()
 		console.log(`Server is running on http://localhost:${env.PORT}`);
 	});
 
-app.use(swagger({
+server.use(swagger({
 	autoDarkMode: true,
 	version: '1.0.0',
 	path: "/docs"
 }))
 
-export type App = typeof app 
+export type App = typeof server 

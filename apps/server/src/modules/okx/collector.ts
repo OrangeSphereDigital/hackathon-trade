@@ -1,5 +1,6 @@
 import { getAggregator } from "../ticker/candle-agg";
 import { OKX_WS_URL, OKX_PAIRS } from "./constant";
+import { resolveOkxAgent } from "./okxProxyPlugin";
 
 export class OkxTickerCollector {
     private ws: WebSocket | null = null;
@@ -29,11 +30,11 @@ export class OkxTickerCollector {
             this.ws = null;
         }
     }
-
     private async connect(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             console.log('[OKX] Connection URL:', OKX_WS_URL);
-            this.ws = new WebSocket(OKX_WS_URL);
+            const agent = resolveOkxAgent();
+            this.ws = new WebSocket(OKX_WS_URL, { agent } as any);
 
             this.ws.onopen = () => {
                 console.log('[OKX] Connected');

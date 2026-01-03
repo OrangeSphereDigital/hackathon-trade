@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ArbitrageRouteImport } from './routes/arbitrage'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminFounderContactRouteImport } from './routes/admin/founder-contact'
 import { Route as AdminEarlyAccessRouteImport } from './routes/admin/early-access'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
@@ -35,6 +36,11 @@ const ArbitrageRoute = ArbitrageRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminFounderContactRoute = AdminFounderContactRouteImport.update({
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/early-access': typeof AdminEarlyAccessRoute
   '/admin/founder-contact': typeof AdminFounderContactRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/early-access': typeof AdminEarlyAccessRoute
   '/admin/founder-contact': typeof AdminFounderContactRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/early-access': typeof AdminEarlyAccessRoute
   '/admin/founder-contact': typeof AdminFounderContactRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/early-access'
     | '/admin/founder-contact'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/early-access'
     | '/admin/founder-contact'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/early-access'
     | '/admin/founder-contact'
+    | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminEarlyAccessRoute: typeof AdminEarlyAccessRoute
   AdminFounderContactRoute: typeof AdminFounderContactRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/founder-contact': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AdminEarlyAccessRoute: AdminEarlyAccessRoute,
   AdminFounderContactRoute: AdminFounderContactRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
