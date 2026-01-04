@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw } from "lucide-react";
 import { SimulatedTradesSummary } from "./SimulatedTradesSummary";
 import { SimulatedTradeRow } from "./SimulatedTradeRow";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,

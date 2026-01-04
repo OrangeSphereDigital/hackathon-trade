@@ -71,7 +71,7 @@ globalCollectors.arbitrage = { stop: stopArbitrageBot };
 const server = new Elysia()
 	.use(cors({
 		origin: process.env.CORS_ORIGIN || "",
-		methods: ["GET", "POST", "OPTIONS"],
+		methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
 	}))
