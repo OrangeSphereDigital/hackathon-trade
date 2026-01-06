@@ -1,0 +1,22 @@
+services:
+  app:
+    container_name: 21s2mars-app-local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 21s2mars:local
+
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    env_file:
+      - apps/server/.env
+      - apps/web/.env
+
+    environment:
+      DATABASE_URL: postgresql://root:admin@host.docker.internal:5432/hackathon-trade
+      REDIS_URL: redis://host.docker.internal:6379
+      NODE_ENV: production
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
