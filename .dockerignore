@@ -1,9 +1,7 @@
+.env
+.env.*
+node_modules
 .git
 .gitignore
-.env*
-node_modules
-.turbo
-apps/**/.next
-apps/**/dist
-packages/**/dist
 Dockerfile
+docker-compose*.yml

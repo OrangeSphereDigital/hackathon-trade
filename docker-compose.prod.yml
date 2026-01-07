@@ -1,12 +1,10 @@
 services:
   app:
-    container_name: 21s2mars-app
     build:
       context: .
       dockerfile: Dockerfile
+    image: clientandservermonorepo:latest
     ports:
       - "3001:3000"
       - "3002:3001"
-    env_file:
-      - .env
     restart: unless-stopped
