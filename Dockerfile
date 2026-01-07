@@ -44,4 +44,8 @@ COPY entrypoint.sh /entrypoint.sh
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 EXPOSE 3000 3001
+
+# 🔴 TEMP DEBUG CMD (to inspect envs)
+CMD sh -c "echo 'DEBUG MODE: sleeping to inspect envs'; sleep 300"
+
 ENTRYPOINT ["/entrypoint.sh"]
