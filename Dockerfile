@@ -10,16 +10,22 @@ ENV NODE_ENV=production
 # =========================
 FROM base AS build
 
-# Copy everything (VPS build, env available)
-COPY . .
+# 1️⃣ Copy only dependency files (CACHE FRIENDLY)
+COPY bun.lockb package.json ./
+COPY apps/*/package.json ./apps/*/
+COPY packages/*/package.json ./packages/*/
 
-# Install deps (NO frozen lockfile on VPS)
+# Install deps
 RUN bun install
 
-# Prisma client
+# 2️⃣ Copy the rest of the repo
+COPY . .
+
+# 3️⃣ Prisma needs DATABASE_URL at build time (dummy is fine)
+ENV DATABASE_URL="postgresql://user:pass@localhost:5432/db"
 RUN cd packages/db && bunx prisma generate
 
-# Build apps
+# 4️⃣ Build apps
 RUN bunx turbo run build --filter=server...
 RUN bunx turbo run build --filter=web...
 
@@ -37,6 +43,8 @@ COPY --from=build /app/apps/web/dist ./apps/web/dist
 # Runtime deps + workspace packages
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages ./packages
+
+# Prisma schema (for migrations if needed)
 COPY --from=build /app/packages/db/prisma ./packages/db/prisma
 
 # Entrypoint
