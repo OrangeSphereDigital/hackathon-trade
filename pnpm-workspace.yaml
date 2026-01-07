@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+catalog:
+  better-auth: "^1.4.0"
+  dotenv: "^17.2.2"
+  "@prisma/client": "^7.0.0"
