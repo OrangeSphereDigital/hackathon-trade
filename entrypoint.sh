@@ -20,13 +20,10 @@
 #!/bin/sh
 set -e
 
-echo "▶ Running Prisma migrations..."
-cd packages/db
-bunx prisma migrate deploy
+echo "Starting server..."
+bun run apps/server/dist/index.js &
 
-echo "▶ Generating Prisma client..."
-bunx prisma generate
+echo "Starting web..."
+bun run apps/web/dist/index.js &
 
-echo "▶ Starting application..."
-cd /app
-exec bun run start
+wait
