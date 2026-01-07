@@ -6,15 +6,15 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # =========================
-# Dependencies + Build
+# Build
 # =========================
 FROM base AS build
 
-# Copy EVERYTHING (required for Bun workspaces)
+# Copy everything (VPS build, env available)
 COPY . .
 
-# Install deps (workspaces now resolvable)
-RUN bun install --frozen-lockfile
+# Install deps (NO frozen lockfile on VPS)
+RUN bun install
 
 # Prisma client
 RUN cd packages/db && bunx prisma generate

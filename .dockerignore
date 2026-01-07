@@ -1,0 +1,9 @@
+.git
+.gitignore
+.env*
+node_modules
+.turbo
+apps/**/.next
+apps/**/dist
+packages/**/dist
+Dockerfile

@@ -1,13 +1,12 @@
 services:
   app:
-    image: khalids01/21s2mars:${TAG:-latest}
     container_name: 21s2mars-app
-    restart: unless-stopped
-
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3001:3000"
       - "3002:3001"
-    environment:
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
-      NODE_ENV: production
+    env_file:
+      - .env
+    restart: unless-stopped
