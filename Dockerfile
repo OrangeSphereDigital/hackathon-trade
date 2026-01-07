@@ -11,7 +11,7 @@ ENV NODE_ENV=production
 FROM base AS build
 
 # 1️⃣ Copy only dependency files (CACHE FRIENDLY)
-COPY bun.lockb package.json ./
+COPY bun.lock package.json ./
 COPY apps/*/package.json ./apps/*/
 COPY packages/*/package.json ./packages/*/
 
