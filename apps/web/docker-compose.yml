@@ -1,0 +1,12 @@
+services:
+  web:
+    build:
+      context: ../../
+      dockerfile: apps/web/Dockerfile
+      target: runtime
+    command: bunx serve apps/web/dist -l 3001 -s
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    env_file:
+      - .env
