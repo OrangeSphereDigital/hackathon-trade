@@ -6,8 +6,6 @@ services:
       target: runtime
     image: orangesphere:latest
     command: bunx prisma migrate deploy
-    env_file:
-      - ./apps/server/.env
     restart: "no"
     networks:
       - dokploy-network
@@ -19,8 +17,6 @@ services:
       target: runtime
     image: orangesphere:latest
     command: bun run apps/server/dist/index.js
-    env_file:
-      - ./apps/server/.env
     restart: unless-stopped
     depends_on:
       - prisma-migrate
@@ -44,8 +40,7 @@ services:
       dockerfile: Dockerfile
       target: runtime
       args:
-        VITE_API_URL: ${VITE_API_URL}
-        VITE_WS_URL: ${VITE_WS_URL}
+        VITE_SERVER_URL: ${VITE_SERVER_URL}
     image: orangesphere:latest
     command: bunx serve apps/web/dist -l 3001 -s
     restart: unless-stopped
