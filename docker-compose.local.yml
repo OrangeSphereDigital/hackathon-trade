@@ -10,8 +10,7 @@ services:
       - "3000:3000"
       - "3001:3001"
     env_file:
-      - apps/server/.env
-      - apps/web/.env
+      - .env
 
     environment:
       DATABASE_URL: postgresql://root:admin@host.docker.internal:5432/hackathon-trade

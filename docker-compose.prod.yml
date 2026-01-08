@@ -1,20 +1,68 @@
 services:
+  prisma-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    image: orangesphere:latest
+    command: bunx prisma migrate deploy
+    env_file:
+      - ./apps/server/.env
+    restart: "no"
+    networks:
+      - dokploy-network
+
   server:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
+    image: orangesphere:latest
     command: bun run apps/server/dist/index.js
-    ports:
-      - "3002:3000"
+    env_file:
+      - ./apps/server/.env
     restart: unless-stopped
+    depends_on:
+      - prisma-migrate
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.server-web.rule=Host(`api.orangesphere.io`)
+      - traefik.http.routers.server-web.entrypoints=web
+      - traefik.http.routers.server-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.server-websecure.rule=Host(`api.orangesphere.io`)
+      - traefik.http.routers.server-websecure.entrypoints=websecure
+      - traefik.http.routers.server-websecure.tls=true
+      - traefik.http.routers.server-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.server.loadbalancer.server.port=3000
 
   web:
     build:
       context: .
       dockerfile: Dockerfile
       target: runtime
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        VITE_WS_URL: ${VITE_WS_URL}
+    image: orangesphere:latest
     command: bunx serve apps/web/dist -l 3001 -s
-    ports:
-      - "3001:3001"
     restart: unless-stopped
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.web-web.rule=Host(`orangesphere.io`,`www.orangesphere.io`)
+      - traefik.http.routers.web-web.entrypoints=web
+      - traefik.http.routers.web-web.middlewares=redirect-to-https@file
+      - traefik.http.routers.web-websecure.rule=Host(`orangesphere.io`,`www.orangesphere.io`)
+      - traefik.http.routers.web-websecure.entrypoints=websecure
+      - traefik.http.routers.web-websecure.tls=true
+      - traefik.http.routers.web-websecure.tls.certresolver=letsencrypt
+      - traefik.http.services.web.loadbalancer.server.port=3001
+
+networks:
+  dokploy-network:
+    external: true
