@@ -9,6 +9,10 @@ services:
     restart: "no"
     networks:
       - dokploy-network
+    environment:
+      - DATABASE_URL
+      - DIRECT_URL
+      - NODE_ENV
 
   server:
     build:
@@ -22,6 +26,26 @@ services:
       - prisma-migrate
     networks:
       - dokploy-network
+    environment:
+      - NODE_ENV
+      - DATABASE_URL
+      - DIRECT_URL
+      - REDIS_URL
+      - TICKER_REDIS_TTL_SEC
+      - BETTER_AUTH_SECRET
+      - BETTER_AUTH_URL
+      - CORS_ORIGIN
+      - BNB_RPC_URL
+      - BNB_PRIVATE_KEY
+      - BNB_TEST_NET_CONTRACT_ADDRESS
+      - SIMULATION_TRADE_AMOUNT_USD
+      - EMAIL
+      - EMAIL_PASSWORD
+      - EMAIL_FROM
+      - SMTP_HOST
+      - SMTP_PORT
+      - ADMIN_EMAIL
+      - LOCAL_OKX_PROXY
     labels:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
