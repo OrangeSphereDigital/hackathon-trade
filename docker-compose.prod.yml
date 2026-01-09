@@ -9,8 +9,9 @@ services:
     image: 21s2mars-server:latest
     command: >
       sh -c "
+      cd packages/db &&
       bunx prisma migrate deploy &&
-      bun run apps/server/dist/index.js
+      bun run ../../apps/server/dist/index.js
       "
     restart: unless-stopped
     networks:
