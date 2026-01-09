@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runtime
-    image: _21s2mars:latest
+    image: 21s2mars:latest
     command: bunx prisma migrate deploy
     restart: "no"
     networks:
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runtime
-    image: _21s2mars:latest
+    image: 21s2mars:latest
     command: bun run apps/server/dist/index.js
     restart: unless-stopped
     depends_on:
@@ -69,7 +69,7 @@ services:
       target: runtime
       args:
         VITE_SERVER_URL: ${VITE_SERVER_URL}
-    image: _21s2mars:latest
+    image: 21s2mars:latest
     command: bunx serve apps/web/dist -l 3001 -s
     restart: unless-stopped
     networks:
