@@ -7,11 +7,11 @@ class RedisService {
   private isConnected = false;
 
   private constructor() {
-    if (!env.APP_REDIS_URL) {
-      throw new Error('APP_REDIS_URL is not configured in environment variables');
+    if (!env.REDIS_URL) {
+      throw new Error('REDIS_URL is not configured in environment variables');
     }
 
-    this.client = createClient({ url: env.APP_REDIS_URL });
+    this.client = createClient({ url: env.REDIS_URL });
 
     this.client.on('error', (err: Error) => {
       console.error('[Redis] Client Error:', err);

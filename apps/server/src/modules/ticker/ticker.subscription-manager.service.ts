@@ -32,8 +32,8 @@ export class SubscriptionManager {
 
     private async getSubscriber() {
         if (!this.subscriber) {
-            if (!env.APP_REDIS_URL) throw new Error('APP_REDIS_URL not set');
-            this.subscriber = createClient({ url: env.APP_REDIS_URL });
+            if (!env.REDIS_URL) throw new Error('REDIS_URL not set');
+            this.subscriber = createClient({ url: env.REDIS_URL });
 
             this.subscriber.on('error', (err) => console.error('[TickerSub] Redis Error:', err));
 
