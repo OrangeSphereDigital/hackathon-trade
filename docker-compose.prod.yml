@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
       target: runtime
     image: orangesphere:latest
-    command: bunx prisma migrate deploy
+    command: bunx prisma migrate deploy --schema apps/server/prisma/schema.prisma
     restart: "no"
     networks:
       - dokploy-network
