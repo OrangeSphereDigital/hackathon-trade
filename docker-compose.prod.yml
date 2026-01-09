@@ -32,7 +32,7 @@ services:
       - NODE_ENV
       - DATABASE_URL
       - DIRECT_URL
-      - REDIS_URL=redis://:4rqz4eeglhkd1@rds-1logco:6379
+      - APP_REDIS_URL=redis://:4rqz4eeglhkd1@rds-1logco:6379
       - TICKER_REDIS_TTL_SEC
       - BETTER_AUTH_SECRET
       - BETTER_AUTH_URL

@@ -7,11 +7,11 @@ class RedisService {
   private isConnected = false;
 
   private constructor() {
-    if (!env.REDIS_URL) {
-      throw new Error('REDIS_URL is not configured in environment variables');
+    if (!env.APP_REDIS_URL) {
+      throw new Error('APP_REDIS_URL is not configured in environment variables');
     }
 
-    this.client = createClient({ url: env.REDIS_URL });
+    this.client = createClient({ url: env.APP_REDIS_URL });
 
     this.client.on('error', (err: Error) => {
       console.error('[Redis] Client Error:', err);
@@ -68,7 +68,7 @@ class RedisService {
   public async set(key: string, value: any, ttl?: number): Promise<void> {
     const client = await this.getClient();
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    
+
     if (ttl) {
       await client.set(key, stringValue, { EX: ttl });
     } else {
@@ -83,7 +83,7 @@ class RedisService {
       acc[k] = typeof v === 'object' ? JSON.stringify(v) : String(v);
       return acc;
     }, {} as Record<string, string>);
-    
+
     return await client.hSet(key, stringFields);
   }
 
@@ -91,7 +91,7 @@ class RedisService {
     const client = await this.getClient();
     const data = await client.hGetAll(key);
     if (!data || Object.keys(data).length === 0) return null;
-    
+
 
     return data as unknown as T;
   }

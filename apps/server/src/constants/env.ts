@@ -3,7 +3,7 @@ export const env = {
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     CORS_ORIGIN: process.env.CORS_ORIGIN,
     DATABASE_URL: process.env.DATABASE_URL,
-    REDIS_URL: process.env.REDIS_URL,
+    APP_REDIS_URL: process.env.APP_REDIS_URL,
     TICKER_REDIS_TTL_SEC: process.env.TICKER_REDIS_TTL_SEC,
     SIMULATION_TRADE_AMOUNT_USD: process.env.SIMULATION_TRADE_AMOUNT_USD,
     BNB_RPC_URL: process.env.BNB_RPC_URL,
